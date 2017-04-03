@@ -82,15 +82,15 @@ func handleRequests(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusUnauthorized)
 		logger.Println("Unauthorized")
 		return
-	} else {
-		writer.WriteHeader(http.StatusOK)
-		response := SlackMessage{}
-		response.Text = fmt.Sprintf("%+v", slackRequest)
-		responseJSON, _ := response.ToJson()
-		logger.Println(fmt.Sprintf("JSON: %s", string(responseJSON)))
-		writer.Write(responseJSON)
-		return
 	}
+	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
+	writer.WriteHeader(http.StatusOK)
+	response := SlackMessage{}
+	response.Text = fmt.Sprintf("%+v", slackRequest)
+	responseJSON, _ := response.ToJson()
+	logger.Println(fmt.Sprintf("JSON: %s", string(responseJSON)))
+	writer.Write(responseJSON)
+	return
 }
 
 func NewSlackRequest(requestParams url.Values) SlackRequest {
