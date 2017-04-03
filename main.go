@@ -1,13 +1,13 @@
 package main
 
 import (
-	"net/http"
-	"io/ioutil"
-	"net/url"
-	"fmt"
 	"encoding/json"
-	"os"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
+	"os"
 )
 
 const configFilePath = "./appconfig.json"
@@ -28,18 +28,18 @@ user_name=Steve
 command=/weather
 text=94070
 response_url=https://hooks.slack.com/commands/1234/5678
- */
+*/
 type SlackRequest struct {
 	Token       string
-	TeamId      string
+	TeamID      string
 	TeamDomain  string
-	ChannelId   string
+	ChannelID   string
 	ChannelName string
-	UserId      string
+	UserID      string
 	UserName    string
 	Command     string
 	MsgText     string
-	ResponseUrl string
+	ResponseURL string
 }
 
 type SlackMessage struct {
@@ -95,9 +95,9 @@ func handleRequests(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusOK)
 		response := SlackMessage{}
 		response.Text = fmt.Sprintf("%+v", slackRequest)
-		responseJson, _ := response.ToJson()
-		logger.Println(fmt.Sprintf("JSON: %s", string(responseJson)))
-		writer.Write(responseJson)
+		responseJSON, _ := response.ToJson()
+		logger.Println(fmt.Sprintf("JSON: %s", string(responseJSON)))
+		writer.Write(responseJSON)
 		return
 	}
 }
@@ -105,14 +105,14 @@ func handleRequests(writer http.ResponseWriter, request *http.Request) {
 func NewSlackRequest(requestParams url.Values) SlackRequest {
 	request := SlackRequest{}
 	request.Token = requestParams.Get("token")
-	request.TeamId = requestParams.Get("team_id")
+	request.TeamID = requestParams.Get("team_id")
 	request.TeamDomain = requestParams.Get("team_domain")
-	request.ChannelId = requestParams.Get("channel_id")
+	request.ChannelID = requestParams.Get("channel_id")
 	request.ChannelName = requestParams.Get("channel_name")
-	request.UserId = requestParams.Get("user_id")
+	request.UserID = requestParams.Get("user_id")
 	request.UserName = requestParams.Get("user_name")
 	request.Command = requestParams.Get("command")
 	request.MsgText = requestParams.Get("text")
-	request.ResponseUrl = requestParams.Get("response_url")
+	request.ResponseURL = requestParams.Get("response_url")
 	return request
 }
