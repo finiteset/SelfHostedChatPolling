@@ -2,13 +2,16 @@ package main
 
 import (
 	"fmt"
+	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"log"
+	"markusreschke.name/selfhostedsimplepolling/config"
+	"markusreschke.name/selfhostedsimplepolling/slack"
 	"net/http"
 	"net/url"
 	"os"
-	"markusreschke.name/selfhostedsimplepolling/slack"
-	"markusreschke.name/selfhostedsimplepolling/config"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -20,18 +23,42 @@ const (
 var appConfig config.AppConfig
 var logger *log.Logger
 
+func newPollMessage(question string, options ...string) slack.SlackMessage {
+	var msg slack.SlackMessage
+	msg.Text = question
+	var buttonAttachment slack.Attachment
+	buttonAttachment.Fallback = "Poll not available"
+	callbackID := uuid.NewV4()
+	buttonAttachment.CallbackID = callbackID.String()
+	for index, option := range options {
+		var button slack.Action
+		button.Name = option + "_button"
+		button.Text = option
+		button.Type = "button"
+		button.Value = strconv.Itoa(index)
+		buttonAttachment.AddAction(button)
+	}
+	msg.AddAttachment(buttonAttachment)
+	return msg
+}
+
 func main() {
 	logger = log.New(os.Stdout, "logger: ", log.Lshortfile)
-	var err error;
+	var err error
 	appConfig, err = config.ReadConfig(configFilePath)
-	if (err != nil) {
+	if err != nil {
 		logger.Fatal("Error reading config file: ", err)
 	}
-	http.HandleFunc("/", handleRequests)
+	http.HandleFunc("/newpoll", handleNewPollRequests)
+	http.HandleFunc("/updatepoll", handleUpdatePollRequests)
 	http.ListenAndServe(":8080", nil)
 }
 
-func handleRequests(writer http.ResponseWriter, request *http.Request) {
+func parseSlashCommand(commandArguments string) []string {
+	return strings.Split(commandArguments, " ")
+}
+
+func handleNewPollRequests(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		writer.WriteHeader(http.StatusMethodNotAllowed)
 		logger.Println("MethodNotAllowed")
@@ -52,15 +79,35 @@ func handleRequests(writer http.ResponseWriter, request *http.Request) {
 		logger.Println("Unauthorized")
 		return
 	}
+
+	commandArguments := parseSlashCommand(slackRequest.MsgText)
+	response := newPollMessage(commandArguments[0], commandArguments[1:]...)
+
 	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 	writer.WriteHeader(http.StatusOK)
-	response := slack.SlackMessage{}
-	response.Text = fmt.Sprintf("%+v", slackRequest)
+
 	responseJSON, _ := response.ToJSON()
 	logger.Println(fmt.Sprintf("JSON: %s", string(responseJSON)))
 	writer.Write(responseJSON)
 	return
 }
 
+func handleUpdatePollRequests(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		writer.WriteHeader(http.StatusMethodNotAllowed)
+		logger.Println("MethodNotAllowed")
+		return
+	}
+	body, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		logger.Println("BadRequest")
+		return
+	}
 
+	logger.Println(fmt.Sprintf("%+v", string(body)))
 
+	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
+	writer.WriteHeader(http.StatusOK)
+	return
+}
