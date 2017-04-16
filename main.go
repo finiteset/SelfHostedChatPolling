@@ -71,6 +71,11 @@ func handleNewPollRequests(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	parsedBody, err := url.ParseQuery(string(body))
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		logger.Println("BadRequest")
+		return
+	}
 	slackRequest := slack.NewSlackRequest(parsedBody)
 	logger.Println(fmt.Sprintf("%+v", slackRequest))
 
@@ -101,11 +106,30 @@ func handleUpdatePollRequests(writer http.ResponseWriter, request *http.Request)
 	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
-		logger.Println("BadRequest")
+		logger.Println("BadRequest", err)
+		return
+	}
+	parsedBody, err := url.ParseQuery(string(body))
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		logger.Println("BadRequest", err)
+		return
+	}
+	payload := parsedBody.Get("payload")
+	if payload == "" {
+		writer.WriteHeader(http.StatusBadRequest)
+		logger.Println("BadRequest", err)
 		return
 	}
 
-	logger.Println(fmt.Sprintf("%+v", string(body)))
+	actionCallback, err := slack.NewActionResponseFromPayload(payload)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		logger.Println("InternalServerError", err)
+		return
+	}
+
+	logger.Println(fmt.Sprintf("%+v", actionCallback))
 
 	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 	writer.WriteHeader(http.StatusOK)
