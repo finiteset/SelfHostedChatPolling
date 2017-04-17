@@ -67,17 +67,16 @@ func handleNewPollRequests(writer http.ResponseWriter, request *http.Request) {
 	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
-		logger.Println("BadRequest")
+		logger.Println("BadRequest", err)
 		return
 	}
 	parsedBody, err := url.ParseQuery(string(body))
 	if err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
-		logger.Println("BadRequest")
+		logger.Println("BadRequest", err)
 		return
 	}
 	slackRequest := slack.NewSlackRequest(parsedBody)
-	logger.Println(fmt.Sprintf("%+v", slackRequest))
 
 	if slackRequest.Token != appConfig.SlackVerificationToken {
 		writer.WriteHeader(http.StatusUnauthorized)
@@ -118,7 +117,7 @@ func handleUpdatePollRequests(writer http.ResponseWriter, request *http.Request)
 	payload := parsedBody.Get("payload")
 	if payload == "" {
 		writer.WriteHeader(http.StatusBadRequest)
-		logger.Println("BadRequest", err)
+		logger.Println("BadRequest")
 		return
 	}
 
@@ -129,7 +128,6 @@ func handleUpdatePollRequests(writer http.ResponseWriter, request *http.Request)
 		return
 	}
 
-	logger.Println(fmt.Sprintf("%+v", actionCallback))
 
 	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 	writer.WriteHeader(http.StatusOK)
