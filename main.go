@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"log"
@@ -91,7 +90,6 @@ func handleNewPollRequests(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(http.StatusOK)
 
 	responseJSON, _ := response.ToJSON()
-	logger.Println(fmt.Sprintf("JSON: %s", string(responseJSON)))
 	writer.Write(responseJSON)
 	return
 }
