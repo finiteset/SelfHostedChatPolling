@@ -128,6 +128,11 @@ func handleUpdatePollRequests(writer http.ResponseWriter, request *http.Request)
 		return
 	}
 
+	if actionCallback.Token != appConfig.SlackVerificationToken {
+		writer.WriteHeader(http.StatusUnauthorized)
+		logger.Println("Unauthorized")
+		return
+	}
 
 	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 	writer.WriteHeader(http.StatusOK)
