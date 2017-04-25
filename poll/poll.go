@@ -1,6 +1,8 @@
 package poll
 
-import "sync"
+import (
+	"sync"
+)
 
 type Poll interface {
 	Question() string
@@ -44,7 +46,7 @@ func (v SimpleVote) VotedFor() string { return v.votedFor }
 type Store interface {
 	AddPoll(p Poll)
 	AddVote(v Vote)
-	GetResult(p Poll) map[string]uint64
+	GetResult(pollId string) map[string]uint64
 }
 
 type InMemoryStore struct {
@@ -72,10 +74,10 @@ func (s *InMemoryStore) AddVote(v Vote) {
 	s.voteStore[v.PollID()] = append(oldVotes, v)
 	s.lock.Unlock()
 }
-func (s *InMemoryStore) GetResult(p Poll) map[string]uint64 {
+func (s *InMemoryStore) GetResult(pollId string) map[string]uint64 {
 	result := make(map[string]uint64)
 	s.lock.Lock()
-	votes := s.voteStore[p.ID()]
+	votes := s.voteStore[pollId]
 	for _, vote := range votes {
 		result[vote.VotedFor()]++
 	}
