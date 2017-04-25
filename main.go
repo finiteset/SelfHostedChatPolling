@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"markusreschke.name/selfhostedsimplepolling/config"
+	"markusreschke.name/selfhostedsimplepolling/poll"
 	"markusreschke.name/selfhostedsimplepolling/slack"
 	"net/http"
 	"net/url"
@@ -21,6 +22,7 @@ const (
 
 var appConfig config.AppConfig
 var logger *log.Logger
+var pollStore poll.Store
 
 func newPollMessage(callbackID uuid.UUID, question string, options ...string) slack.SlackMessage {
 	var msg slack.SlackMessage
@@ -47,6 +49,8 @@ func main() {
 	if err != nil {
 		logger.Fatal("Error reading config file: ", err)
 	}
+	pollStore = poll.NewInMemoryStore()
+	logger.Println(pollStore)
 	http.HandleFunc("/newpoll", handleNewPollRequests)
 	http.HandleFunc("/updatepoll", handleUpdatePollRequests)
 	http.ListenAndServe(":8080", nil)
@@ -85,6 +89,10 @@ func handleNewPollRequests(writer http.ResponseWriter, request *http.Request) {
 	callBackID := uuid.NewV4()
 	commandArguments := parseSlashCommand(slackRequest.MsgText)
 	response := newPollMessage(callBackID, commandArguments[0], commandArguments[1:]...)
+
+	poll := poll.NewSimplePoll(callBackID.String(), commandArguments[0], slackRequest.UserID)
+
+	pollStore.AddPoll(poll)
 
 	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 	writer.WriteHeader(http.StatusOK)
@@ -132,7 +140,15 @@ func handleUpdatePollRequests(writer http.ResponseWriter, request *http.Request)
 		return
 	}
 
+	vote := poll.NewSimpleVote(uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, actionCallback.Actions[0].Value)
+
+	pollStore.AddVote(vote)
+
+	logger.Println(pollStore)
+	logger.Println(pollStore.GetResult(actionCallback.CallbackID))
+
 	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 	writer.WriteHeader(http.StatusOK)
+
 	return
 }
