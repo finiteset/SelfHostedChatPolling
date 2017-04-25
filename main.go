@@ -22,12 +22,11 @@ const (
 var appConfig config.AppConfig
 var logger *log.Logger
 
-func newPollMessage(question string, options ...string) slack.SlackMessage {
+func newPollMessage(callbackID uuid.UUID, question string, options ...string) slack.SlackMessage {
 	var msg slack.SlackMessage
 	msg.Text = question
 	var buttonAttachment slack.Attachment
 	buttonAttachment.Fallback = "Poll not available"
-	callbackID := uuid.NewV4()
 	buttonAttachment.CallbackID = callbackID.String()
 	for index, option := range options {
 		var button slack.Action
@@ -83,8 +82,9 @@ func handleNewPollRequests(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	callBackID := uuid.NewV4()
 	commandArguments := parseSlashCommand(slackRequest.MsgText)
-	response := newPollMessage(commandArguments[0], commandArguments[1:]...)
+	response := newPollMessage(callBackID, commandArguments[0], commandArguments[1:]...)
 
 	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 	writer.WriteHeader(http.StatusOK)
