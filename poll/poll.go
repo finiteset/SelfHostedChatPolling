@@ -23,10 +23,10 @@ type SimplePoll struct {
 	creatorID string
 }
 
-func NewPoll(id, question, creatorID string) Poll { return SimplePoll{id, question, creatorID} }
-func (p SimplePoll) ID() string                   { return p.id }
-func (p SimplePoll) Question() string             { return p.question }
-func (p SimplePoll) CreatorID() string            { return p.creatorID }
+func NewSimplePoll(id, question, creatorID string) Poll { return SimplePoll{id, question, creatorID} }
+func (p SimplePoll) ID() string                         { return p.id }
+func (p SimplePoll) Question() string                   { return p.question }
+func (p SimplePoll) CreatorID() string                  { return p.creatorID }
 
 type SimpleVote struct {
 	id       string
@@ -65,7 +65,7 @@ func NewInMemoryStore() Store {
 func (s *InMemoryStore) AddPoll(p Poll) {
 	s.lock.Lock()
 	s.pollStore[p.ID()] = p
-	s.voteStore[p.ID()] = make([]Vote, 20)
+	s.voteStore[p.ID()] = make([]Vote, 0, 20)
 	s.lock.Unlock()
 }
 func (s *InMemoryStore) AddVote(v Vote) {
