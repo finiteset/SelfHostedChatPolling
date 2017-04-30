@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"log"
@@ -105,9 +106,11 @@ func handleNewPollRequests(writer http.ResponseWriter, request *http.Request) {
 
 	callBackID := uuid.NewV4()
 	commandArguments := parseSlashCommand(slackRequest.MsgText)
-	response := newPollMessage(callBackID, commandArguments[0], commandArguments[1:]...)
+	options := commandArguments[1:]
+	question := commandArguments[0]
+	response := newPollMessage(callBackID, question, options...)
 
-	poll := poll.NewSimplePoll(callBackID.String(), commandArguments[0], slackRequest.UserID)
+	poll := poll.NewSimplePoll(callBackID.String(), commandArguments[0], slackRequest.UserID, options)
 
 	pollStore.AddPoll(poll)
 
@@ -161,11 +164,17 @@ func handleUpdatePollRequests(writer http.ResponseWriter, request *http.Request)
 
 	pollStore.AddVote(vote)
 
-	logger.Println(pollStore)
-	logger.Println(pollStore.GetResult(actionCallback.CallbackID))
+	results := pollStore.GetResult(actionCallback.CallbackID)
+
+	poll := pollStore.GetPoll(actionCallback.CallbackID)
+
+	updatedMessage := updatePollMessage(poll, actionCallback, results)
 
 	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 	writer.WriteHeader(http.StatusOK)
+
+	responseJSON, _ := updatedMessage.ToJSON()
+	writer.Write(responseJSON)
 
 	return
 }

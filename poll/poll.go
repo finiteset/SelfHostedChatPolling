@@ -8,6 +8,7 @@ type Poll interface {
 	Question() string
 	ID() string
 	CreatorID() string
+	Options() []string
 }
 
 type Vote interface {
@@ -21,12 +22,16 @@ type SimplePoll struct {
 	id        string
 	question  string
 	creatorID string
+	options   []string
 }
 
-func NewSimplePoll(id, question, creatorID string) Poll { return SimplePoll{id, question, creatorID} }
-func (p SimplePoll) ID() string                         { return p.id }
-func (p SimplePoll) Question() string                   { return p.question }
-func (p SimplePoll) CreatorID() string                  { return p.creatorID }
+func NewSimplePoll(id, question, creatorID string, options []string) Poll {
+	return SimplePoll{id, question, creatorID, options}
+}
+func (p SimplePoll) ID() string        { return p.id }
+func (p SimplePoll) Question() string  { return p.question }
+func (p SimplePoll) CreatorID() string { return p.creatorID }
+func (p SimplePoll) Options() []string { return p.options }
 
 type SimpleVote struct {
 	id       string
@@ -47,6 +52,7 @@ type Store interface {
 	AddPoll(p Poll)
 	AddVote(v Vote)
 	GetResult(pollId string) map[string]uint64
+	GetPoll(pollId string) Poll
 }
 
 type InMemoryStore struct {
@@ -68,12 +74,14 @@ func (s *InMemoryStore) AddPoll(p Poll) {
 	s.voteStore[p.ID()] = make([]Vote, 0, 20)
 	s.lock.Unlock()
 }
+
 func (s *InMemoryStore) AddVote(v Vote) {
 	s.lock.Lock()
 	oldVotes := s.voteStore[v.PollID()]
 	s.voteStore[v.PollID()] = append(oldVotes, v)
 	s.lock.Unlock()
 }
+
 func (s *InMemoryStore) GetResult(pollId string) map[string]uint64 {
 	result := make(map[string]uint64)
 	s.lock.Lock()
@@ -83,4 +91,11 @@ func (s *InMemoryStore) GetResult(pollId string) map[string]uint64 {
 	}
 	s.lock.Unlock()
 	return result
+}
+
+func (s *InMemoryStore) GetPoll(pollId string) Poll {
+	s.lock.Lock()
+	poll := s.pollStore[pollId]
+	s.lock.Unlock()
+	return poll
 }
