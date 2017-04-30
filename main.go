@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	configFilePath        = "./appconfig.json"
 	contentTypeJSON       = "application/json"
 	httpHeaderContentType = "Content-Type"
 )
@@ -42,10 +41,28 @@ func newPollMessage(callbackID uuid.UUID, question string, options ...string) sl
 	return msg
 }
 
+func updatePollMessage(poll poll.Poll, callback slack.ActionResponse, results map[string]uint64) slack.SlackMessage {
+	var msg slack.SlackMessage
+	msg.Text = poll.Question()
+	var buttonAttachment slack.Attachment
+	buttonAttachment.Fallback = "Poll not available"
+	buttonAttachment.CallbackID = poll.ID()
+	for index, option := range poll.Options() {
+		var button slack.Action
+		button.Name = option + "_button"
+		button.Text = option + " " + fmt.Sprintf("%d", results[strconv.Itoa(index)])
+		button.Type = "button"
+		button.Value = strconv.Itoa(index)
+		buttonAttachment.AddAction(button)
+	}
+	msg.AddAttachment(buttonAttachment)
+	return msg
+}
+
 func main() {
 	logger = log.New(os.Stdout, "logger: ", log.Lshortfile)
 	var err error
-	appConfig, err = config.ReadConfig(configFilePath)
+	appConfig, err = config.ReadConfigFromEnv()
 	if err != nil {
 		logger.Fatal("Error reading config file: ", err)
 	}
@@ -53,7 +70,7 @@ func main() {
 	logger.Println(pollStore)
 	http.HandleFunc("/newpoll", handleNewPollRequests)
 	http.HandleFunc("/updatepoll", handleUpdatePollRequests)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":"+strconv.Itoa(appConfig.Port), nil)
 }
 
 func parseSlashCommand(commandArguments string) []string {

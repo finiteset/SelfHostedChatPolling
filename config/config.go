@@ -1,20 +1,26 @@
 package config
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"errors"
+	"os"
+	"strconv"
 )
 
 type AppConfig struct {
 	SlackVerificationToken string
+	Port                   int
 }
 
-func ReadConfig(configFilePath string) (AppConfig, error) {
-	var parsedConfig AppConfig
-	rawConfig, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		return parsedConfig, err
+func ReadConfigFromEnv() (AppConfig, error) {
+	var config AppConfig
+	config.SlackVerificationToken = os.Getenv("SLACK_TOKEN")
+	if config.SlackVerificationToken == "" {
+		return config, errors.New("SLACK_TOKEN environment variable is not set!")
 	}
-	err = json.Unmarshal(rawConfig, &parsedConfig)
-	return parsedConfig, err
+	port, err := strconv.Atoi(os.Getenv("SHSP_PORT"))
+	if err != nil {
+		port = 80
+	}
+	config.Port = port
+	return config, nil
 }
