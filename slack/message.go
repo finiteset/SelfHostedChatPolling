@@ -2,6 +2,10 @@ package slack
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/satori/go.uuid"
+	"markusreschke.name/selfhostedsimplepolling/poll"
+	"strconv"
 )
 
 type SlackMessage struct {
@@ -91,4 +95,40 @@ func (a *Attachment) AddField(f AttachmentField) {
 
 func (a *Attachment) AddAction(action Action) {
 	a.Actions = append(a.Actions, action)
+}
+
+func NewPollMessage(callbackID uuid.UUID, question string, options ...string) SlackMessage {
+	var msg SlackMessage
+	msg.Text = question
+	var buttonAttachment Attachment
+	buttonAttachment.Fallback = "Poll not available"
+	buttonAttachment.CallbackID = callbackID.String()
+	for index, option := range options {
+		var button Action
+		button.Name = option + "_button"
+		button.Text = option
+		button.Type = "button"
+		button.Value = strconv.Itoa(index)
+		buttonAttachment.AddAction(button)
+	}
+	msg.AddAttachment(buttonAttachment)
+	return msg
+}
+
+func UpdatePollMessage(poll poll.Poll, callback ActionResponse, results map[string]uint64) SlackMessage {
+	var msg SlackMessage
+	msg.Text = poll.Question()
+	var buttonAttachment Attachment
+	buttonAttachment.Fallback = "Poll not available"
+	buttonAttachment.CallbackID = poll.ID()
+	for index, option := range poll.Options() {
+		var button Action
+		button.Name = option + "_button"
+		button.Text = option + " " + fmt.Sprintf("%d", results[strconv.Itoa(index)])
+		button.Type = "button"
+		button.Value = strconv.Itoa(index)
+		buttonAttachment.AddAction(button)
+	}
+	msg.AddAttachment(buttonAttachment)
+	return msg
 }
