@@ -19,7 +19,10 @@ func ReadConfigFromEnv() (AppConfig, error) {
 	}
 	port, err := strconv.Atoi(os.Getenv("SHSP_PORT"))
 	if err != nil {
-		port = 80
+		port, err = strconv.Atoi(os.Getenv("PORT"))
+		if err != nil {
+			port = 80
+		}
 	}
 	config.Port = port
 	return config, nil
