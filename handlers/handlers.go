@@ -9,17 +9,12 @@ import (
 	"markusreschke.name/selfhostedsimplepolling/slack"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 const (
 	contentTypeJSON       = "application/json"
 	httpHeaderContentType = "Content-Type"
 )
-
-func parseSlashCommand(commandArguments string) []string {
-	return strings.Split(commandArguments, " ")
-}
 
 func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
@@ -49,7 +44,7 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 		}
 
 		callBackID := uuid.NewV4()
-		commandArguments := parseSlashCommand(slackRequest.MsgText)
+		commandArguments := slack.ParseSlashCommand(slackRequest.MsgText)
 		options := commandArguments[1:]
 		question := commandArguments[0]
 		response := slack.NewPollMessage(callBackID, question, options...)
