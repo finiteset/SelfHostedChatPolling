@@ -49,7 +49,7 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 		question := commandArguments[0]
 		response := slack.NewPollMessage(callBackID, question, options...)
 
-		poll := poll.NewSimplePoll(callBackID.String(), commandArguments[0], slackRequest.UserID, options)
+		poll := poll.NewPoll(callBackID.String(), commandArguments[0], slackRequest.UserID, options)
 
 		pollStore.AddPoll(poll)
 
@@ -101,13 +101,13 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 			return
 		}
 
-		vote := poll.NewSimpleVote(uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, actionCallback.Actions[0].Value)
+		vote := poll.NewVote(uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, actionCallback.Actions[0].Value)
 
 		pollStore.AddVote(vote)
 
-		results := pollStore.GetResult(actionCallback.CallbackID)
+		results, _ := pollStore.GetResult(actionCallback.CallbackID)
 
-		poll := pollStore.GetPoll(actionCallback.CallbackID)
+		poll, _ := pollStore.GetPoll(actionCallback.CallbackID)
 
 		updatedMessage := slack.UpdatePollMessage(poll, actionCallback, results)
 

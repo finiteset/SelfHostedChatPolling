@@ -4,55 +4,34 @@ import (
 	"sync"
 )
 
-type Poll interface {
-	Question() string
-	ID() string
-	CreatorID() string
-	Options() []string
+type Poll struct {
+	ID        string `json:"_id"`
+	Question  string
+	CreatorID string
+	Options   []string
 }
 
-type Vote interface {
-	ID() string
-	VoterID() string
-	PollID() string
-	VotedFor() string
+func NewPoll(id, question, creatorID string, options []string) Poll {
+	return Poll{id, question, creatorID, options}
 }
 
-type SimplePoll struct {
-	id        string
-	question  string
-	creatorID string
-	options   []string
+type Vote struct {
+	ID       string `json:"_id"`
+	VoterID  string
+	PollID   string
+	VotedFor string
 }
 
-func NewSimplePoll(id, question, creatorID string, options []string) Poll {
-	return SimplePoll{id, question, creatorID, options}
+func NewVote(id, voterID, pollID, votedFor string) Vote {
+	return Vote{id, voterID, pollID, votedFor}
 }
-func (p SimplePoll) ID() string        { return p.id }
-func (p SimplePoll) Question() string  { return p.question }
-func (p SimplePoll) CreatorID() string { return p.creatorID }
-func (p SimplePoll) Options() []string { return p.options }
-
-type SimpleVote struct {
-	id       string
-	voterID  string
-	pollID   string
-	votedFor string
-}
-
-func NewSimpleVote(id, voterID, pollID, votedFor string) Vote {
-	return SimpleVote{id, voterID, pollID, votedFor}
-}
-func (v SimpleVote) ID() string       { return v.id }
-func (v SimpleVote) VoterID() string  { return v.voterID }
-func (v SimpleVote) PollID() string   { return v.pollID }
-func (v SimpleVote) VotedFor() string { return v.votedFor }
 
 type Store interface {
-	AddPoll(p Poll)
-	AddVote(v Vote)
-	GetResult(pollId string) map[string]uint64
-	GetPoll(pollId string) Poll
+	AddPoll(p Poll) error
+	AddVote(v Vote) error
+	GetResult(pollId string) (map[string]uint64, error)
+	GetPoll(pollId string) (Poll, error)
+	GetVote(voteId string) (Vote, error)
 }
 
 type InMemoryStore struct {
@@ -68,34 +47,51 @@ func NewInMemoryStore() Store {
 	return store
 }
 
-func (s *InMemoryStore) AddPoll(p Poll) {
+func (s *InMemoryStore) AddPoll(p Poll) error {
 	s.lock.Lock()
-	s.pollStore[p.ID()] = p
-	s.voteStore[p.ID()] = make([]Vote, 0, 20)
+	s.pollStore[p.ID] = p
+	s.voteStore[p.ID] = make([]Vote, 0, 20)
 	s.lock.Unlock()
+	return nil
 }
 
-func (s *InMemoryStore) AddVote(v Vote) {
+func (s *InMemoryStore) AddVote(v Vote) error {
 	s.lock.Lock()
-	oldVotes := s.voteStore[v.PollID()]
-	s.voteStore[v.PollID()] = append(oldVotes, v)
+	oldVotes := s.voteStore[v.PollID]
+	s.voteStore[v.PollID] = append(oldVotes, v)
 	s.lock.Unlock()
+	return nil
 }
 
-func (s *InMemoryStore) GetResult(pollId string) map[string]uint64 {
+func (s *InMemoryStore) GetResult(pollId string) (map[string]uint64, error) {
 	result := make(map[string]uint64)
 	s.lock.Lock()
 	votes := s.voteStore[pollId]
 	for _, vote := range votes {
-		result[vote.VotedFor()]++
+		result[vote.VotedFor]++
 	}
 	s.lock.Unlock()
-	return result
+	return result, nil
 }
 
-func (s *InMemoryStore) GetPoll(pollId string) Poll {
+func (s *InMemoryStore) GetPoll(pollId string) (Poll, error) {
 	s.lock.Lock()
 	poll := s.pollStore[pollId]
 	s.lock.Unlock()
-	return poll
+	return poll, nil
+}
+
+func (s *InMemoryStore) GetVote(voteId string) (Vote, error) {
+	var foundVote Vote
+	s.lock.Lock()
+	for _, votes := range s.voteStore {
+		for _, vote := range votes {
+			if vote.ID == voteId {
+				foundVote = vote
+				break
+			}
+		}
+	}
+	s.lock.Unlock()
+	return foundVote, nil
 }

@@ -2,6 +2,11 @@ package: markusreschke.name/selfhostedsimplepolling
 import:
 - package: github.com/satori/go.uuid
   version: 1.1.0
-- package: github.com/davecgh/go-spew/spew
+- package: github.com/davecgh/go-spew
   version: 1.1.0
-
+  subpackages:
+  - spew
+- package: github.com/IBM-Bluemix/go-cloudant
+- package: github.com/cloudfoundry-community/go-cfenv
+  version: v1.17.0
+- package: github.com/mitchellh/mapstructure

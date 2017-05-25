@@ -117,11 +117,11 @@ func NewPollMessage(callbackID uuid.UUID, question string, options ...string) Sl
 
 func UpdatePollMessage(poll poll.Poll, callback ActionResponse, results map[string]uint64) SlackMessage {
 	var msg SlackMessage
-	msg.Text = poll.Question()
+	msg.Text = poll.Question
 	var buttonAttachment Attachment
 	buttonAttachment.Fallback = "Poll not available"
-	buttonAttachment.CallbackID = poll.ID()
-	for index, option := range poll.Options() {
+	buttonAttachment.CallbackID = poll.ID
+	for index, option := range poll.Options {
 		var button Action
 		button.Name = option + "_button"
 		button.Text = option + " " + fmt.Sprintf("%d", results[strconv.Itoa(index)])

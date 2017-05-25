@@ -1,0 +1,28 @@
+hash: b321458dc3b4fcdbd09ab284e67777c74f6f27b792612059550651940a5c325b
+updated: 2017-05-25T02:22:41.545446+02:00
+imports:
+- name: github.com/cloudfoundry-community/go-cfenv
+  version: f920e9562d5f951cbf11785728f67258c38a10d0
+- name: github.com/davecgh/go-spew
+  version: 346938d642f2ec3594ed81d874461961cd0faa76
+  subpackages:
+  - spew
+- name: github.com/IBM-Bluemix/go-cloudant
+  version: 0ded5c7f524e9b5c34a69edfe04de5d03436f10f
+- name: github.com/mitchellh/mapstructure
+  version: d0303fe809921458f417bcf828397a65db30a7e4
+- name: github.com/moul/http2curl
+  version: 4e24498b31dba4683efb9d35c1c8a91e2eda28c8
+- name: github.com/parnurzeal/gorequest
+  version: a578a48e8d6ca8b01a3b18314c43c6716bb5f5a3
+- name: github.com/pkg/errors
+  version: c605e284fe17294bda444b34710735b29d1a9d90
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+- name: github.com/timjacobi/go-couchdb
+  version: 5f9d2a1a29e5b126e51255e92f8c420b0c7a60ac
+- name: golang.org/x/net
+  version: 5b58a9c3e1690d33a592e5b791638e25eb9b3f70
+  subpackages:
+  - publicsuffix
+testImports: []
