@@ -10,7 +10,7 @@ type InMemoryStore struct {
 	lock      sync.Mutex
 }
 
-func NewInMemoryStore() StoreBackend {
+func NewInMemoryStoreBackend() StoreBackend {
 	store := new(InMemoryStore)
 	store.pollStore = make(map[string]Poll)
 	store.voteStore = make(map[string][]Vote)

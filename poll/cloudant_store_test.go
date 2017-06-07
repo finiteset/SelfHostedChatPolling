@@ -37,7 +37,7 @@ func GetCleanStore(client *cloudant.Client) StoreBackend {
 	if err != nil {
 		fmt.Printf("Error deleting db: %v", err)
 	}
-	store, err := NewCloudantStore(client, testDBName)
+	store, err := NewCloudantStoreBackend(client, testDBName)
 	if err != nil {
 		fmt.Printf("Error creating store: %v", err)
 		os.Exit(1)

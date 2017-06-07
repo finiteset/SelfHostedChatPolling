@@ -60,3 +60,4 @@ fabric.properties
 /appconfig.json
 /debug
 manifest.yml
+/selfhostedsimplepolling

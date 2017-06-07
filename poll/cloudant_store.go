@@ -14,7 +14,7 @@ const (
 	votePrefix = "vote_"
 )
 
-func NewCloudantStore(client *cloudant.Client, dbName string) (StoreBackend, error) {
+func NewCloudantStoreBackend(client *cloudant.Client, dbName string) (StoreBackend, error) {
 	db, err := client.CreateDB(dbName)
 	if err != nil {
 		return nil, err

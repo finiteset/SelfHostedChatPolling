@@ -48,10 +48,11 @@ func main() {
 	if err != nil {
 		logger.Fatalf("Couldn't connect to Cloudant: %v", err)
 	}
-	pollStore, err := poll.NewCloudantStore(cloudantClient, os.Getenv("CLOUDANT_DB"))
+	pollStoreBackend, err := poll.NewCloudantStoreBackend(cloudantClient, os.Getenv("CLOUDANT_DB"))
 	if err != nil {
 		logger.Fatalf("Couldn't create poll store: %v", err)
 	}
+	pollStore := poll.NewDefaultStore(pollStoreBackend)
 	logger.Println(pollStore)
 	http.HandleFunc("/newpoll", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore))
 	http.HandleFunc("/updatepoll", handlers.GetUpdatePollRequestHandler(appConfig, logger, pollStore))
