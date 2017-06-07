@@ -1,9 +1,17 @@
 package slack
 
 import (
+	"flag"
 	"github.com/davecgh/go-spew/spew"
+	"os"
 	"testing"
 )
+
+func TestMain(m *testing.M) {
+	flag.Bool("integration", false, "run integration tests")
+	flag.Parse()
+	os.Exit(m.Run())
+}
 
 func TestParseSlashCommand(t *testing.T) {
 	arguments := []string{

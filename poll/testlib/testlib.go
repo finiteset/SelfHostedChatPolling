@@ -1,52 +1,12 @@
-// +build integration
-package poll
+package testlib
 
 import (
-	"flag"
-	"fmt"
-	"github.com/IBM-Bluemix/go-cloudant"
-	"os"
+	. "markusreschke.name/selfhostedsimplepolling/poll"
 	"reflect"
 	"testing"
 )
 
-const (
-	testDBName = "test_poll_db"
-)
-
-var client *cloudant.Client
-
-func TestMain(m *testing.M) {
-	integrationTest := flag.Bool("integration", false, "run integration tests")
-	flag.Parse()
-	if !*integrationTest {
-		fmt.Printf("Skiped test because -integration was not used!\n")
-		os.Exit(0)
-	}
-	var err error
-	client, err = cloudant.NewClient(os.Getenv("CLOUDANT_USER"), os.Getenv("CLOUDANT_PW"))
-	if err != nil {
-		fmt.Printf("Error connecting to cloudant: %v\n", err)
-		os.Exit(1)
-	}
-	os.Exit(m.Run())
-}
-
-func GetCleanStore(client *cloudant.Client) StoreBackend {
-	err := client.DeleteDB(testDBName)
-	if err != nil {
-		fmt.Printf("Error deleting db: %v", err)
-	}
-	store, err := NewCloudantStoreBackend(client, testDBName)
-	if err != nil {
-		fmt.Printf("Error creating store: %v", err)
-		os.Exit(1)
-	}
-	return store
-}
-
-func TestAddingAndRetrievingData(t *testing.T) {
-	store := GetCleanStore(client)
+func TestAddingAndRetrievingData(t *testing.T, store StoreBackend) {
 	poll := Poll{"1", "q", "creator", []string{"a1", "a2"}}
 	err := store.AddPoll(poll)
 	if err != nil {
@@ -67,8 +27,7 @@ func TestAddingAndRetrievingData(t *testing.T) {
 	}
 }
 
-func TestGettingVotesForPoll(t *testing.T) {
-	store := GetCleanStore(client)
+func TestGettingVotesForPoll(t *testing.T, store StoreBackend) {
 	votes := []Vote{
 		{"1", "voter", "1", "a1"},
 		{"2", "voter2", "1", "a1"},

@@ -8,6 +8,7 @@ import (
 	"markusreschke.name/selfhostedsimplepolling/config"
 	"markusreschke.name/selfhostedsimplepolling/handlers"
 	"markusreschke.name/selfhostedsimplepolling/poll"
+	"markusreschke.name/selfhostedsimplepolling/poll/cloudantstore"
 	"net/http"
 	"os"
 	"strconv"
@@ -48,7 +49,7 @@ func main() {
 	if err != nil {
 		logger.Fatalf("Couldn't connect to Cloudant: %v", err)
 	}
-	pollStoreBackend, err := poll.NewCloudantStoreBackend(cloudantClient, os.Getenv("CLOUDANT_DB"))
+	pollStoreBackend, err := cloudantstore.NewCloudantStoreBackend(cloudantClient, os.Getenv("CLOUDANT_DB"))
 	if err != nil {
 		logger.Fatalf("Couldn't create poll store: %v", err)
 	}
