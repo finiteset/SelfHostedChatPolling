@@ -1,6 +1,8 @@
+// +build integration
 package poll
 
 import (
+	"flag"
 	"fmt"
 	"github.com/IBM-Bluemix/go-cloudant"
 	"os"
@@ -15,10 +17,15 @@ const (
 var client *cloudant.Client
 
 func TestMain(m *testing.M) {
+	integrationTest := flag.Bool("integration", false, "run integration tests")
+	if !*integrationTest {
+		fmt.Printf("Skiped test because -interation was not used!\n")
+		os.Exit(0)
+	}
 	var err error
 	client, err = cloudant.NewClient(os.Getenv("CLOUDANT_USER"), os.Getenv("CLOUDANT_PW"))
 	if err != nil {
-		fmt.Printf("Error connecting to cloudant: %v", err)
+		fmt.Printf("Error connecting to cloudant: %v\n", err)
 		os.Exit(1)
 	}
 	os.Exit(m.Run())
