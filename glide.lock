@@ -1,12 +1,8 @@
-hash: b321458dc3b4fcdbd09ab284e67777c74f6f27b792612059550651940a5c325b
-updated: 2017-05-28T11:28:36.3036402+02:00
+hash: b3a2955c489432b63fc8737553b44307c565093b1ff3b4ff18c0ff87d1945c36
+updated: 2017-06-07T21:20:14.7133498+02:00
 imports:
 - name: github.com/cloudfoundry-community/go-cfenv
   version: f920e9562d5f951cbf11785728f67258c38a10d0
-- name: github.com/davecgh/go-spew
-  version: 346938d642f2ec3594ed81d874461961cd0faa76
-  subpackages:
-  - spew
 - name: github.com/IBM-Bluemix/go-cloudant
   version: 0ded5c7f524e9b5c34a69edfe04de5d03436f10f
 - name: github.com/mitchellh/mapstructure
@@ -22,7 +18,11 @@ imports:
 - name: github.com/timjacobi/go-couchdb
   version: 5f9d2a1a29e5b126e51255e92f8c420b0c7a60ac
 - name: golang.org/x/net
-  version: 48359f4f600b3a2d5cf657458e3f940021631a56
+  version: 59a0b19b5533c7977ddeb86b017bf507ed407b12
   subpackages:
   - publicsuffix
-testImports: []
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 346938d642f2ec3594ed81d874461961cd0faa76
+  subpackages:
+  - spew
