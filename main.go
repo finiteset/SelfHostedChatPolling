@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"github.com/IBM-Bluemix/go-cloudant"
 	"github.com/cloudfoundry-community/go-cfenv"
 	"log"
 	"markusreschke.name/selfhostedsimplepolling/config"
@@ -9,27 +11,25 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"github.com/IBM-Bluemix/go-cloudant"
-	"errors"
 )
 
 func getCloudantCredentialsFromEnv(cloudantServiceName string) (user, password string, err error) {
 	appEnv, err := cfenv.Current()
 	if err != nil {
-		return "","",err
+		return "", "", err
 	}
 	services := appEnv.Services
 	cloudantService, err := services.WithName(cloudantServiceName)
 	if err != nil {
-		return "","",err
+		return "", "", err
 	}
 	user, isUserSet := cloudantService.CredentialString("username")
 	if !isUserSet {
-		return "","", errors.New("Cloudant Username not found in CF Env!")
+		return "", "", errors.New("cloudant username not found in CF env")
 	}
 	password, isPasswordSet := cloudantService.CredentialString("password")
 	if !isPasswordSet {
-		return "","", errors.New("Cloudant Password not found in CF Env!")
+		return "", "", errors.New("cloudant password not found in CF env")
 	}
 	return user, password, nil
 }
