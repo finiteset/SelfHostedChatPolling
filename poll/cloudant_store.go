@@ -14,7 +14,7 @@ const (
 	votePrefix = "vote_"
 )
 
-func NewCloudantStore(client *cloudant.Client, dbName string) (Store, error) {
+func NewCloudantStore(client *cloudant.Client, dbName string) (StoreBackend, error) {
 	db, err := client.CreateDB(dbName)
 	if err != nil {
 		return nil, err
@@ -34,8 +34,26 @@ func (s *CloudantStore) AddVote(v Vote) error {
 	return err
 }
 
-func (s *CloudantStore) GetResult(pollId string) (map[string]uint64, error) {
-	result := make(map[string]uint64)
+func rebuildVotesFromSearchResult(votes []interface{}) []Vote {
+	result := []Vote{}
+	for _, rawVote := range votes {
+		voteMap := rawVote.(map[string]interface{})
+		vote := rebuildVoteFromMap(voteMap)
+		result = append(result, vote)
+	}
+	return result
+}
+
+func rebuildVoteFromMap(voteMap map[string]interface{}) Vote {
+	return Vote{
+		strings.TrimPrefix(voteMap["_id"].(string), votePrefix),
+		voteMap["VoterID"].(string),
+		voteMap["PollID"].(string),
+		voteMap["VotedFor"].(string),
+	}
+}
+
+func (s *CloudantStore) GetVotesForPoll(pollId string) ([]Vote, error) {
 	query := cloudant.Query{}
 	query.Selector = make(map[string]interface{})
 	query.Selector["PollID"] = pollId
@@ -43,11 +61,7 @@ func (s *CloudantStore) GetResult(pollId string) (map[string]uint64, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, voteRaw := range votes {
-		vote := voteRaw.(map[string]interface{})
-		result[vote["VotedFor"].(string)]++
-	}
-	return result, nil
+	return rebuildVotesFromSearchResult(votes), nil
 }
 
 func (s *CloudantStore) GetPoll(pollId string) (Poll, error) {

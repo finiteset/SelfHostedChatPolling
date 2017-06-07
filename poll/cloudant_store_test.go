@@ -18,8 +18,9 @@ var client *cloudant.Client
 
 func TestMain(m *testing.M) {
 	integrationTest := flag.Bool("integration", false, "run integration tests")
+	flag.Parse()
 	if !*integrationTest {
-		fmt.Printf("Skiped test because -interation was not used!\n")
+		fmt.Printf("Skiped test because -integration was not used!\n")
 		os.Exit(0)
 	}
 	var err error
@@ -31,7 +32,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func GetCleanStore(client *cloudant.Client) Store {
+func GetCleanStore(client *cloudant.Client) StoreBackend {
 	err := client.DeleteDB(testDBName)
 	if err != nil {
 		fmt.Printf("Error deleting db: %v", err)
@@ -66,24 +67,37 @@ func TestAddingAndRetrievingData(t *testing.T) {
 	}
 }
 
-func TestGettingCount(t *testing.T) {
+func TestGettingVotesForPoll(t *testing.T) {
 	store := GetCleanStore(client)
+	votes := []Vote{
+		{"1", "voter", "1", "a1"},
+		{"2", "voter2", "1", "a1"},
+		{"3", "voter3", "1", "a3"},
+	}
 	poll := Poll{"1", "q", "creator", []string{"a1", "a2", "a3"}}
 	store.AddPoll(poll)
-	vote := Vote{"1", "voter", "1", "a1"}
-	store.AddVote(vote)
-	vote = Vote{"2", "voter2", "1", "a1"}
-	store.AddVote(vote)
-	vote = Vote{"3", "voter3", "1", "a3"}
-	store.AddVote(vote)
-	vote = Vote{"4", "voter4", "1", "a1"}
-	store.AddVote(vote)
-	vote = Vote{"5", "voter5", "1", "a3"}
-	store.AddVote(vote)
-	vote = Vote{"6", "voter6", "1", "a1"}
-	store.AddVote(vote)
-	result, err := store.GetResult("1")
-	if err != nil || result["a1"] != 4 || result["a2"] != 0 || result["a3"] != 2 {
-		t.Fatalf("Counts do not match. Error: %v", err)
+	for _, vote := range votes {
+		store.AddVote(vote)
+	}
+	result, err := store.GetVotesForPoll(poll.ID)
+	if err != nil {
+		t.Fatalf("Error while fetching votes for Poll %s: %v", poll.ID, err)
+	}
+	compareVotes(t, votes, result)
+}
+
+func compareVotes(t *testing.T, expected, actual []Vote) {
+expectedLoop:
+	for _, expectedVote := range expected {
+		for _, actualVote := range actual {
+			if expectedVote.ID == actualVote.ID {
+				if expectedVote == actualVote {
+					continue expectedLoop
+				} else {
+					t.Fatalf("Expected %v but got %v", expectedVote, actualVote)
+				}
+			}
+		}
+		t.Fatalf("No matching vote found for ID %s", expectedVote.ID)
 	}
 }
