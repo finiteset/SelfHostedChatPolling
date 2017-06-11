@@ -36,4 +36,5 @@ type StoreBackend interface {
 	GetPoll(pollId string) (Poll, error)
 	GetVote(voteId string) (Vote, error)
 	GetVotesForPoll(pollId string) ([]Vote, error)
+	PollHasVoteFromVoter(pollID, voterID string) (bool, error)
 }

@@ -27,6 +27,32 @@ func TestAddingAndRetrievingData(t *testing.T, store StoreBackend) {
 	}
 }
 
+func TestPollHasVoteFromVoter(t *testing.T, store StoreBackend) {
+	poll := Poll{"1", "q", "creator", []string{"a1", "a2"}}
+	voterID := "voter"
+	isVotePresent, err := store.PollHasVoteFromVoter(poll.ID, voterID)
+	if err != nil || isVotePresent {
+		if err != nil {
+			t.Fatalf("Error looking up vote: %v", err)
+		} else {
+			t.Fatalf("Vote found for Voter %s in empty store!", voterID)
+		}
+	}
+	vote := Vote{"1", voterID, "1", "a1"}
+	err = store.AddVote(vote)
+	if err != nil {
+		t.Fatalf("Error creating vote: %v", err)
+	}
+	isVotePresent, err = store.PollHasVoteFromVoter(poll.ID, voterID)
+	if err != nil || !isVotePresent {
+		if err != nil {
+			t.Fatalf("Error looking up vote: %v", err)
+		} else {
+			t.Fatalf("Vote not found for Voter %s after adding it!", voterID)
+		}
+	}
+}
+
 func TestGettingVotesForPoll(t *testing.T, store StoreBackend) {
 	votes := []Vote{
 		{"1", "voter", "1", "a1"},
