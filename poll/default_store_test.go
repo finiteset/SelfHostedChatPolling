@@ -35,6 +35,8 @@ func TestAddingAndRetrievingData(t *testing.T) {
 	if !(vote == voteFromStore) {
 		t.Fatalf("Expected %v but got %v", vote, voteFromStore)
 	}
+
+	// Test if store allows for invalid voting
 	voteInvalidDouble := poll.Vote{"1", "voter", "1", "a1"}
 	err = store.AddVote(voteInvalidDouble)
 	if err == nil {
