@@ -124,7 +124,7 @@ func UpdatePollMessage(poll poll.Poll, callback ActionResponse, results map[int]
 	for index, option := range poll.Options {
 		var button Action
 		button.Name = option + "_button"
-		button.Text = option + " " + fmt.Sprintf("%d", results[index])
+		button.Text = option + " | " + fmt.Sprintf("%d", results[index])
 		button.Type = "button"
 		button.Value = strconv.Itoa(index)
 		buttonAttachment.AddAction(button)
