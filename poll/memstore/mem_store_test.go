@@ -25,3 +25,7 @@ func TestAddingAndRetrievingData(t *testing.T) {
 func TestGettingVotesForPoll(t *testing.T) {
 	testlib.TestGettingVotesForPoll(t, getCleanStore())
 }
+
+func TestPollHasVoteFromVoter(t *testing.T) {
+	testlib.TestPollHasVoteFromVoter(t, getCleanStore())
+}

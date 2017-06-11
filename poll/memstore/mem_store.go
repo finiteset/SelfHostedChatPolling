@@ -18,6 +18,19 @@ func NewInMemoryStoreBackend() poll.StoreBackend {
 	return store
 }
 
+func (s *InMemoryStore) PollHasVoteFromVoter(pollID, voterID string) (bool, error) {
+	s.lock.Lock()
+	voteFound := false
+	for _, vote := range s.voteStore[pollID] {
+		if vote.VoterID == voterID {
+			voteFound = true
+			break
+		}
+	}
+	s.lock.Unlock()
+	return voteFound, nil
+}
+
 func (s *InMemoryStore) AddPoll(p poll.Poll) error {
 	s.lock.Lock()
 	s.pollStore[p.ID] = p

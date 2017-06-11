@@ -78,3 +78,19 @@ func (s *CloudantStore) GetVote(voteId string) (poll.Vote, error) {
 	vote.ID = strings.Replace(vote.ID, votePrefix, "", 1)
 	return vote, err
 }
+
+func (s *CloudantStore) PollHasVoteFromVoter(pollID, voterID string) (bool, error) {
+	query := cloudant.Query{}
+	query.Selector = make(map[string]interface{})
+	query.Selector["PollID"] = pollID
+	query.Selector["VoterID"] = voterID
+	votes, err := s.db.SearchDocument(query)
+	if err != nil {
+		return false, err
+	}
+	if votes == nil || len(votes) == 0 {
+		return false, nil
+	} else {
+		return true, nil
+	}
+}
