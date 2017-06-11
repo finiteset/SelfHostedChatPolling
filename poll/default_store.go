@@ -40,18 +40,12 @@ func (s *DefaultStore) votedForValidOption(v Vote) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	isValidChoice := false
-	for _, option := range pollForVote.Options {
-		if v.VotedFor == option {
-			isValidChoice = true
-			break
-		}
-	}
+	isValidChoice := v.VotedFor >= 0 && v.VotedFor < len(pollForVote.Options)
 	return isValidChoice, nil
 }
 
-func (s *DefaultStore) GetResult(pollId string) (map[string]uint64, error) {
-	result := make(map[string]uint64)
+func (s *DefaultStore) GetResult(pollId string) (map[int]uint64, error) {
+	result := make(map[int]uint64)
 	votes, err := s.backend.GetVotesForPoll(pollId)
 	if err != nil {
 		return nil, err

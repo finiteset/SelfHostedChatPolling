@@ -12,7 +12,7 @@ func TestAddingAndRetrievingData(t *testing.T, store StoreBackend) {
 	if err != nil {
 		t.Fatalf("Error creating poll: %v", err)
 	}
-	vote := Vote{"1", "voter", "1", "a1"}
+	vote := Vote{"1", "voter", "1", 0}
 	err = store.AddVote(vote)
 	if err != nil {
 		t.Fatalf("Error creating vote: %v", err)
@@ -38,7 +38,7 @@ func TestPollHasVoteFromVoter(t *testing.T, store StoreBackend) {
 			t.Fatalf("Vote found for Voter %s in empty store!", voterID)
 		}
 	}
-	vote := Vote{"1", voterID, "1", "a1"}
+	vote := Vote{"1", voterID, "1", 0}
 	err = store.AddVote(vote)
 	if err != nil {
 		t.Fatalf("Error creating vote: %v", err)
@@ -54,12 +54,12 @@ func TestPollHasVoteFromVoter(t *testing.T, store StoreBackend) {
 }
 
 func TestGettingVotesForPoll(t *testing.T, store StoreBackend) {
-	votes := []Vote{
-		{"1", "voter", "1", "a1"},
-		{"2", "voter2", "1", "a1"},
-		{"3", "voter3", "1", "a3"},
-	}
 	poll := Poll{"1", "q", "creator", []string{"a1", "a2", "a3"}}
+	votes := []Vote{
+		{"1", "voter", "1", 0},
+		{"2", "voter2", "1", 0},
+		{"3", "voter3", "1", 2},
+	}
 	store.AddPoll(poll)
 	for _, vote := range votes {
 		store.AddVote(vote)

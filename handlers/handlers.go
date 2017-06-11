@@ -9,6 +9,7 @@ import (
 	"markusreschke.name/selfhostedsimplepolling/slack"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 const (
@@ -49,7 +50,7 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 		question := commandArguments[0]
 		response := slack.NewPollMessage(callBackID, question, options...)
 
-		poll := poll.NewPoll(callBackID.String(), commandArguments[0], slackRequest.UserID, options)
+		poll := poll.Poll{callBackID.String(), commandArguments[0], slackRequest.UserID, options}
 
 		pollStore.AddPoll(poll)
 
@@ -78,13 +79,13 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 		parsedBody, err := url.ParseQuery(string(body))
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
-			logger.Println("BadRequest", err)
+			logger.Println("BadRequest - Couldn't parse request", err)
 			return
 		}
 		payload := parsedBody.Get("payload")
 		if payload == "" {
 			writer.WriteHeader(http.StatusBadRequest)
-			logger.Println("BadRequest")
+			logger.Println("BadRequest - No Payload")
 			return
 		}
 
@@ -101,7 +102,13 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 			return
 		}
 
-		vote := poll.NewVote(uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, actionCallback.Actions[0].Value)
+		voteOptionIndex,err := strconv.Atoi(actionCallback.Actions[0].Value)
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			logger.Println("BadRequest - Value of Action Callback is not a valid vote option index", err)
+			return
+		}
+		vote := poll.Vote{uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, voteOptionIndex}
 
 		pollStore.AddVote(vote)
 

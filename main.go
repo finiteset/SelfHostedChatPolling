@@ -2,13 +2,14 @@ package main
 
 import (
 	"errors"
-	"github.com/IBM-Bluemix/go-cloudant"
+	//"github.com/IBM-Bluemix/go-cloudant"
 	"github.com/cloudfoundry-community/go-cfenv"
 	"log"
 	"markusreschke.name/selfhostedsimplepolling/config"
 	"markusreschke.name/selfhostedsimplepolling/handlers"
 	"markusreschke.name/selfhostedsimplepolling/poll"
-	"markusreschke.name/selfhostedsimplepolling/poll/cloudantstore"
+	//"markusreschke.name/selfhostedsimplepolling/poll/cloudantstore"
+	"markusreschke.name/selfhostedsimplepolling/poll/memstore"
 	"net/http"
 	"os"
 	"strconv"
@@ -41,7 +42,7 @@ func main() {
 	if err != nil {
 		logger.Fatal("Error reading config file: ", err)
 	}
-	cloudantUser, cloudantPassword, err := getCloudantCredentialsFromEnv("shsp-cloudant")
+	/*cloudantUser, cloudantPassword, err := getCloudantCredentialsFromEnv("shsp-cloudant")
 	if err != nil {
 		logger.Fatalf("Couldn't fetch CLoudant credentials: %v", err)
 	}
@@ -52,9 +53,9 @@ func main() {
 	pollStoreBackend, err := cloudantstore.NewCloudantStoreBackend(cloudantClient, os.Getenv("CLOUDANT_DB"))
 	if err != nil {
 		logger.Fatalf("Couldn't create poll store: %v", err)
-	}
+	}*/
+	pollStoreBackend := memstore.NewInMemoryStoreBackend()
 	pollStore := poll.NewDefaultStore(pollStoreBackend)
-	logger.Println(pollStore)
 	http.HandleFunc("/newpoll", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore))
 	http.HandleFunc("/updatepoll", handlers.GetUpdatePollRequestHandler(appConfig, logger, pollStore))
 	http.ListenAndServe(":"+strconv.Itoa(appConfig.Port), nil)

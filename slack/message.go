@@ -115,7 +115,7 @@ func NewPollMessage(callbackID uuid.UUID, question string, options ...string) Sl
 	return msg
 }
 
-func UpdatePollMessage(poll poll.Poll, callback ActionResponse, results map[string]uint64) SlackMessage {
+func UpdatePollMessage(poll poll.Poll, callback ActionResponse, results map[int]uint64) SlackMessage {
 	var msg SlackMessage
 	msg.Text = poll.Question
 	var buttonAttachment Attachment
@@ -124,7 +124,7 @@ func UpdatePollMessage(poll poll.Poll, callback ActionResponse, results map[stri
 	for index, option := range poll.Options {
 		var button Action
 		button.Name = option + "_button"
-		button.Text = option + " " + fmt.Sprintf("%d", results[strconv.Itoa(index)])
+		button.Text = option + " " + fmt.Sprintf("%d", results[index])
 		button.Type = "button"
 		button.Value = strconv.Itoa(index)
 		buttonAttachment.AddAction(button)

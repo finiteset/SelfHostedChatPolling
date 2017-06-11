@@ -35,23 +35,26 @@ func (s *CloudantStore) AddVote(v poll.Vote) error {
 	return err
 }
 
-func rebuildVotesFromSearchResult(votes []interface{}) []poll.Vote {
+func rebuildVotesFromSearchResult(votes []interface{}) ([]poll.Vote, error) {
 	result := []poll.Vote{}
 	for _, rawVote := range votes {
 		voteMap := rawVote.(map[string]interface{})
-		vote := rebuildVoteFromMap(voteMap)
+		vote, err := rebuildVoteFromMap(voteMap)
+		if (err != nil) {
+			return nil, err
+		}
 		result = append(result, vote)
 	}
-	return result
+	return result, nil
 }
 
-func rebuildVoteFromMap(voteMap map[string]interface{}) poll.Vote {
+func rebuildVoteFromMap(voteMap map[string]interface{}) (poll.Vote, error) {
 	return poll.Vote{
 		strings.TrimPrefix(voteMap["_id"].(string), votePrefix),
 		voteMap["VoterID"].(string),
 		voteMap["PollID"].(string),
-		voteMap["VotedFor"].(string),
-	}
+		int(voteMap["VotedFor"].(float64)),
+	}, nil
 }
 
 func (s *CloudantStore) GetVotesForPoll(pollId string) ([]poll.Vote, error) {
@@ -62,7 +65,7 @@ func (s *CloudantStore) GetVotesForPoll(pollId string) ([]poll.Vote, error) {
 	if err != nil {
 		return nil, err
 	}
-	return rebuildVotesFromSearchResult(votes), nil
+	return rebuildVotesFromSearchResult(votes)
 }
 
 func (s *CloudantStore) GetPoll(pollId string) (poll.Poll, error) {
