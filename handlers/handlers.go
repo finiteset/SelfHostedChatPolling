@@ -1,25 +1,29 @@
 package handlers
 
 import (
-	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"log"
-	"markusreschke.name/selfhostedsimplepolling/config"
-	"markusreschke.name/selfhostedsimplepolling/poll"
-	"markusreschke.name/selfhostedsimplepolling/slack"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/satori/go.uuid"
+	"markusreschke.name/selfhostedsimplepolling/config"
+	"markusreschke.name/selfhostedsimplepolling/poll"
+	"markusreschke.name/selfhostedsimplepolling/slack"
 )
 
 const (
 	contentTypeJSON       = "application/json"
-	contentTypeText = "text/plain"
+	contentTypeText       = "text/plain"
 	httpHeaderContentType = "Content-Type"
 )
 
 func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		if appConfig.LogTraffic {
+			logger.Printf("Poll Creation Request: %v\n", request)
+		}
 		if request.Method != http.MethodPost {
 			writer.WriteHeader(http.StatusMethodNotAllowed)
 			logger.Println("MethodNotAllowed")
@@ -30,6 +34,9 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 			writer.WriteHeader(http.StatusBadRequest)
 			logger.Println("BadRequest", err)
 			return
+		}
+		if appConfig.LogTraffic {
+			logger.Printf("Poll Creation Request Query String: %s\n", string(body))
 		}
 		parsedBody, err := url.ParseQuery(string(body))
 		if err != nil {
@@ -66,6 +73,9 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 
 func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		if appConfig.LogTraffic {
+			logger.Printf("Poll Update Request: %v\n", request)
+		}
 		if request.Method != http.MethodPost {
 			writer.WriteHeader(http.StatusMethodNotAllowed)
 			logger.Println("MethodNotAllowed")
@@ -88,6 +98,9 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 			writer.WriteHeader(http.StatusBadRequest)
 			logger.Println("BadRequest - No Payload")
 			return
+		}
+		if appConfig.LogTraffic {
+			logger.Printf("Poll Update Request Payload: %s\n", payload)
 		}
 
 		actionCallback, err := slack.NewActionResponseFromPayload(payload)
@@ -130,6 +143,9 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 }
 func GetVersionRequestHandler(appConfig config.AppConfig, logger *log.Logger) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		if appConfig.LogTraffic {
+			logger.Printf("Version Request: %v\n", request)
+		}
 		if request.Method != http.MethodGet {
 			writer.WriteHeader(http.StatusMethodNotAllowed)
 			logger.Println("MethodNotAllowed")
