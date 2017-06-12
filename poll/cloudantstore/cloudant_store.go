@@ -1,9 +1,10 @@
 package cloudantstore
 
 import (
+	"strings"
+
 	"github.com/IBM-Bluemix/go-cloudant"
 	"markusreschke.name/selfhostedsimplepolling/poll"
-	"strings"
 )
 
 type CloudantStore struct {
@@ -18,7 +19,10 @@ const (
 func NewCloudantStoreBackend(client *cloudant.Client, dbName string) (poll.StoreBackend, error) {
 	db, err := client.CreateDB(dbName)
 	if err != nil {
-		return nil, err
+		db, err = client.EnsureDB(dbName)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &CloudantStore{db}, nil
 }
@@ -40,7 +44,7 @@ func rebuildVotesFromSearchResult(votes []interface{}) ([]poll.Vote, error) {
 	for _, rawVote := range votes {
 		voteMap := rawVote.(map[string]interface{})
 		vote, err := rebuildVoteFromMap(voteMap)
-		if (err != nil) {
+		if err != nil {
 			return nil, err
 		}
 		result = append(result, vote)
