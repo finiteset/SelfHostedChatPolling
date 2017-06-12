@@ -50,7 +50,7 @@ func main() {
 	if err != nil {
 		logger.Fatalf("Couldn't connect to Cloudant: %v", err)
 	}
-	pollStoreBackend, err := cloudantstore.NewCloudantStoreBackend(cloudantClient, os.Getenv("CLOUDANT_DB"))
+	pollStoreBackend, err := cloudantstore.NewCloudantStoreBackend(cloudantClient, appConfig.DbName)
 	if err != nil {
 		logger.Fatalf("Couldn't create poll store: %v", err)
 	}

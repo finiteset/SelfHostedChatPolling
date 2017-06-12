@@ -11,6 +11,8 @@ var Version string = "0.0.1"
 type AppConfig struct {
 	SlackVerificationToken string
 	Port                   int
+	DbName                 string
+	LogTraffic             bool
 }
 
 func ReadConfigFromEnv() (AppConfig, error) {
@@ -27,5 +29,10 @@ func ReadConfigFromEnv() (AppConfig, error) {
 		}
 	}
 	config.Port = port
+	config.DbName = os.Getenv("CLOUDANT_DB")
+	config.LogTraffic, err = strconv.ParseBool(os.Getenv("SHSP_LOG_TRAFFIC"))
+	if err != nil {
+		config.LogTraffic = false
+	}
 	return config, nil
 }
