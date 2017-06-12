@@ -58,5 +58,6 @@ func main() {
 	pollStore := poll.NewDefaultStore(pollStoreBackend)
 	http.HandleFunc("/newpoll", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore))
 	http.HandleFunc("/updatepoll", handlers.GetUpdatePollRequestHandler(appConfig, logger, pollStore))
+	http.HandleFunc("/version", handlers.GetVersionRequestHandler(appConfig, logger))
 	http.ListenAndServe(":"+strconv.Itoa(appConfig.Port), nil)
 }

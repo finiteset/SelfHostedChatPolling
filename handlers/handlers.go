@@ -14,6 +14,7 @@ import (
 
 const (
 	contentTypeJSON       = "application/json"
+	contentTypeText = "text/plain"
 	httpHeaderContentType = "Content-Type"
 )
 
@@ -102,7 +103,7 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 			return
 		}
 
-		voteOptionIndex,err := strconv.Atoi(actionCallback.Actions[0].Value)
+		voteOptionIndex, err := strconv.Atoi(actionCallback.Actions[0].Value)
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			logger.Println("BadRequest - Value of Action Callback is not a valid vote option index", err)
@@ -123,6 +124,22 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 
 		responseJSON, _ := updatedMessage.ToJSON()
 		writer.Write(responseJSON)
+
+		return
+	}
+}
+func GetVersionRequestHandler(appConfig config.AppConfig, logger *log.Logger) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodGet {
+			writer.WriteHeader(http.StatusMethodNotAllowed)
+			logger.Println("MethodNotAllowed")
+			return
+		}
+
+		writer.Header().Set(httpHeaderContentType, contentTypeText)
+		writer.WriteHeader(http.StatusOK)
+
+		writer.Write([]byte(config.Version))
 
 		return
 	}
