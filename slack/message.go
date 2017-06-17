@@ -3,7 +3,6 @@ package slack
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/satori/go.uuid"
 	"markusreschke.name/selfhostedsimplepolling/poll"
 	"strconv"
 )
@@ -97,25 +96,7 @@ func (a *Attachment) AddAction(action Action) {
 	a.Actions = append(a.Actions, action)
 }
 
-func NewPollMessage(callbackID uuid.UUID, question string, options ...string) SlackMessage {
-	var msg SlackMessage
-	msg.Text = question
-	var buttonAttachment Attachment
-	buttonAttachment.Fallback = "Poll not available"
-	buttonAttachment.CallbackID = callbackID.String()
-	for index, option := range options {
-		var button Action
-		button.Name = option + "_button"
-		button.Text = option
-		button.Type = "button"
-		button.Value = strconv.Itoa(index)
-		buttonAttachment.AddAction(button)
-	}
-	msg.AddAttachment(buttonAttachment)
-	return msg
-}
-
-func UpdatePollMessage(poll poll.Poll, callback ActionResponse, results map[int]uint64) SlackMessage {
+func NewPollMessage(poll poll.Poll, results map[int]uint64) SlackMessage {
 	var msg SlackMessage
 	msg.Text = poll.Question
 	var buttonAttachment Attachment
@@ -124,7 +105,11 @@ func UpdatePollMessage(poll poll.Poll, callback ActionResponse, results map[int]
 	for index, option := range poll.Options {
 		var button Action
 		button.Name = option + "_button"
-		button.Text = option + " | " + fmt.Sprintf("%d", results[index])
+		var voteCount uint64 = 0
+		if results != nil {
+			voteCount = results[index]
+		}
+		button.Text = option + " | " + fmt.Sprintf("%d", voteCount)
 		button.Type = "button"
 		button.Value = strconv.Itoa(index)
 		buttonAttachment.AddAction(button)

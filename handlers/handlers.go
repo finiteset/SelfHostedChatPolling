@@ -56,11 +56,11 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 		commandArguments := slack.ParseSlashCommand(slackRequest.MsgText)
 		options := commandArguments[1:]
 		question := commandArguments[0]
-		response := slack.NewPollMessage(callBackID, question, options...)
 
-		poll := poll.Poll{callBackID.String(), commandArguments[0], slackRequest.UserID, options}
-
+		poll := poll.Poll{callBackID.String(), question, slackRequest.UserID, options}
 		pollStore.AddPoll(poll)
+
+		response := slack.NewPollMessage(poll, nil)
 
 		writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 		writer.WriteHeader(http.StatusOK)
@@ -130,7 +130,7 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 
 		poll, _ := pollStore.GetPoll(actionCallback.CallbackID)
 
-		updatedMessage := slack.UpdatePollMessage(poll, actionCallback, results)
+		updatedMessage := slack.NewPollMessage(poll, results)
 
 		writer.Header().Set(httpHeaderContentType, contentTypeJSON)
 		writer.WriteHeader(http.StatusOK)
