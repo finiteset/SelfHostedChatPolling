@@ -7,6 +7,12 @@ import (
 	"strconv"
 )
 
+var RefreshButtonActionValue string = "refresh"
+
+const (
+	maxButtonsPerAttachment = 5
+)
+
 type SlackMessage struct {
 	Text        string       `json:"text,omitempty"`
 	Attachments []Attachment `json:"attachments,omitempty"`
@@ -100,9 +106,12 @@ func NewPollMessage(poll poll.Poll, results map[int]uint64) SlackMessage {
 	var msg SlackMessage
 	msg.Text = poll.Question
 	var buttonAttachment Attachment
-	buttonAttachment.Fallback = "Poll not available"
-	buttonAttachment.CallbackID = poll.ID
 	for index, option := range poll.Options {
+		if index%maxButtonsPerAttachment == 0 { // First Button in Row
+			buttonAttachment = Attachment{}
+			buttonAttachment.Fallback = "Poll not available"
+			buttonAttachment.CallbackID = poll.ID
+		}
 		var button Action
 		button.Name = option + "_button"
 		var voteCount uint64 = 0
@@ -113,7 +122,15 @@ func NewPollMessage(poll poll.Poll, results map[int]uint64) SlackMessage {
 		button.Type = "button"
 		button.Value = strconv.Itoa(index)
 		buttonAttachment.AddAction(button)
+		if (index+1)%maxButtonsPerAttachment == 0 { // Last Button in Row
+			msg.AddAttachment(buttonAttachment)
+		}
 	}
-	msg.AddAttachment(buttonAttachment)
+	var refreshButtonAttachment Attachment
+	refreshButtonAttachment.Fallback = "Poll not available"
+	refreshButtonAttachment.CallbackID = poll.ID
+	refreshButton := Action{"refresh_button", "Refresh", "button", RefreshButtonActionValue}
+	refreshButtonAttachment.AddAction(refreshButton)
+	msg.AddAttachment(refreshButtonAttachment)
 	return msg
 }
