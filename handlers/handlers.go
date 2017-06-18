@@ -51,6 +51,15 @@ func parseNewPollRequest(appConfig config.AppConfig, logger *log.Logger, writer 
 	return slackRequest, nil
 }
 
+func handleUserFacingError(logger *log.Logger, writer http.ResponseWriter, err error, logMessage, slackMessage string) {
+	logger.Println(logMessage, err)
+	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
+	writer.WriteHeader(http.StatusOK) //Can't set another status than OK because slack then shows an error msg. of its own
+	errorMsg := slack.NewSlackErrorMessage(slackMessage)
+	errorResponseJSON, _ := errorMsg.ToJSON()
+	writer.Write(errorResponseJSON)
+}
+
 func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		slackRequest, err := parseNewPollRequest(appConfig, logger, writer, request)
@@ -64,7 +73,12 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 		question := commandArguments[0]
 
 		poll := poll.Poll{callBackID.String(), question, slackRequest.UserID, options}
-		pollStore.AddPoll(poll)
+		err = pollStore.AddPoll(poll)
+
+		if err != nil {
+			handleUserFacingError(logger, writer, err, "Error adding poll to store: ", "Error creating new poll!")
+			return
+		}
 
 		response := slack.NewPollMessage(poll, nil)
 
@@ -95,12 +109,24 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 				return
 			}
 			vote := poll.Vote{uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, voteOptionIndex}
-			pollStore.AddVote(vote)
+			err = pollStore.AddVote(vote)
+			if err != nil {
+				handleUserFacingError(logger, writer, err, "Error adding vote to store: ", "Error submitting vote!")
+				return
+			}
 		}
 
-		results, _ := pollStore.GetResult(actionCallback.CallbackID)
+		results, err := pollStore.GetResult(actionCallback.CallbackID)
+		if err != nil {
+			handleUserFacingError(logger, writer, err, "Error calculating current poll count: ", "Error refreshing poll!")
+			return
+		}
 
-		poll, _ := pollStore.GetPoll(actionCallback.CallbackID)
+		poll, err := pollStore.GetPoll(actionCallback.CallbackID)
+		if err != nil {
+			handleUserFacingError(logger, writer, err, "Error fetching poll from store for message recreation: ", "Error refreshing poll!")
+			return
+		}
 
 		updatedMessage := slack.NewPollMessage(poll, results)
 

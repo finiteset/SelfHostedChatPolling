@@ -8,11 +8,11 @@ import (
 	"markusreschke.name/selfhostedsimplepolling/handlers"
 	"markusreschke.name/selfhostedsimplepolling/poll"
 	//"markusreschke.name/selfhostedsimplepolling/poll/memstore"
+	"github.com/IBM-Bluemix/go-cloudant"
+	"markusreschke.name/selfhostedsimplepolling/poll/cloudantstore"
 	"net/http"
 	"os"
 	"strconv"
-	"github.com/IBM-Bluemix/go-cloudant"
-	"markusreschke.name/selfhostedsimplepolling/poll/cloudantstore"
 )
 
 func getCloudantCredentialsFromEnv(cloudantServiceName string) (user, password string, err error) {
@@ -44,7 +44,7 @@ func main() {
 	}
 	cloudantUser, cloudantPassword, err := getCloudantCredentialsFromEnv("shsp-cloudant")
 	if err != nil {
-		logger.Fatalf("Couldn't fetch CLoudant credentials: %v", err)
+		logger.Fatalf("Couldn't fetch Cloudant credentials: %v", err)
 	}
 	cloudantClient, err := cloudant.NewClient(cloudantUser, cloudantPassword)
 	if err != nil {
