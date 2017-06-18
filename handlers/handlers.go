@@ -85,15 +85,18 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 			return
 		}
 
-		voteOptionIndex, err := strconv.Atoi(actionCallback.Actions[0].Value)
-		if err != nil {
-			writer.WriteHeader(http.StatusBadRequest)
-			logger.Println("BadRequest - Value of Action Callback is not a valid vote option index", err)
-			return
-		}
-		vote := poll.Vote{uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, voteOptionIndex}
+		actionValue := actionCallback.Actions[0].Value
 
-		pollStore.AddVote(vote)
+		if actionValue != slack.RefreshButtonActionValue {
+			voteOptionIndex, err := strconv.Atoi(actionValue)
+			if err != nil {
+				writer.WriteHeader(http.StatusBadRequest)
+				logger.Println("BadRequest - Value of Action Callback is not a valid vote option index", err)
+				return
+			}
+			vote := poll.Vote{uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, voteOptionIndex}
+			pollStore.AddVote(vote)
+		}
 
 		results, _ := pollStore.GetResult(actionCallback.CallbackID)
 
