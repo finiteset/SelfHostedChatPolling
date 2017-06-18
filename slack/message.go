@@ -8,14 +8,18 @@ import (
 )
 
 var RefreshButtonActionValue string = "refresh"
+var ResponseTypeInChannel string = "in_channel"
+var ResponseTypeEphemeral string = "ephemeral"
 
 const (
 	maxButtonsPerAttachment = 5
 )
 
 type SlackMessage struct {
-	Text        string       `json:"text,omitempty"`
-	Attachments []Attachment `json:"attachments,omitempty"`
+	Text            string       `json:"text,omitempty"`
+	Attachments     []Attachment `json:"attachments,omitempty"`
+	ResponseType    string       `json:"response_type,omitempty"`
+	ReplaceOriginal bool         `json:"replace_original, omitempty"`
 }
 
 type Attachment struct {
@@ -104,7 +108,9 @@ func (a *Attachment) AddAction(action Action) {
 
 func NewPollMessage(poll poll.Poll, results map[int]uint64) SlackMessage {
 	var msg SlackMessage
+	msg.ResponseType = ResponseTypeInChannel
 	msg.Text = poll.Question
+	msg.ReplaceOriginal = true
 	var buttonAttachment Attachment
 	for index, option := range poll.Options {
 		if index%maxButtonsPerAttachment == 0 { // First Button in Row
@@ -122,7 +128,7 @@ func NewPollMessage(poll poll.Poll, results map[int]uint64) SlackMessage {
 		button.Type = "button"
 		button.Value = strconv.Itoa(index)
 		buttonAttachment.AddAction(button)
-		if (index+1)%maxButtonsPerAttachment == 0 { // Last Button in Row
+		if (index+1)%maxButtonsPerAttachment == 0 || (index+1) == len(poll.Options) { // Last Button in Row
 			msg.AddAttachment(buttonAttachment)
 		}
 	}
@@ -133,4 +139,12 @@ func NewPollMessage(poll poll.Poll, results map[int]uint64) SlackMessage {
 	refreshButtonAttachment.AddAction(refreshButton)
 	msg.AddAttachment(refreshButtonAttachment)
 	return msg
+}
+
+func NewSlackErrorMessage(message string) SlackMessage {
+	slackMsg := SlackMessage{}
+	slackMsg.ResponseType = ResponseTypeEphemeral
+	slackMsg.Text = message
+	slackMsg.ReplaceOriginal = false
+	return slackMsg
 }
