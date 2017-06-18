@@ -3,7 +3,7 @@ package slack
 import (
 	"encoding/json"
 	"fmt"
-	"markusreschke.name/selfhostedsimplepolling/poll"
+	"markusreschke.name/selfhostedchatpolling/poll"
 	"strconv"
 )
 

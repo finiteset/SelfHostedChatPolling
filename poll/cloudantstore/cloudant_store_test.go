@@ -5,8 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/IBM-Bluemix/go-cloudant"
-	"markusreschke.name/selfhostedsimplepolling/poll"
-	"markusreschke.name/selfhostedsimplepolling/poll/testlib"
+	"markusreschke.name/selfhostedchatpolling/poll"
+	"markusreschke.name/selfhostedchatpolling/poll/testlib"
 	"os"
 	"testing"
 )

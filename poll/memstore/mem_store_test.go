@@ -2,8 +2,8 @@ package memstore
 
 import (
 	"flag"
-	"markusreschke.name/selfhostedsimplepolling/poll"
-	"markusreschke.name/selfhostedsimplepolling/poll/testlib"
+	"markusreschke.name/selfhostedchatpolling/poll"
+	"markusreschke.name/selfhostedchatpolling/poll/testlib"
 	"os"
 	"testing"
 )

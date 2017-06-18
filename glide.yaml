@@ -1,4 +1,4 @@
-package: markusreschke.name/selfhostedsimplepolling
+package: markusreschke.name/selfhostedchatpolling
 import:
 - package: github.com/IBM-Bluemix/go-cloudant
 - package: github.com/cloudfoundry-community/go-cfenv

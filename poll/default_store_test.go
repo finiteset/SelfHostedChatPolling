@@ -2,8 +2,8 @@ package poll_test
 
 import (
 	"flag"
-	"markusreschke.name/selfhostedsimplepolling/poll"
-	"markusreschke.name/selfhostedsimplepolling/poll/memstore"
+	"markusreschke.name/selfhostedchatpolling/poll"
+	"markusreschke.name/selfhostedchatpolling/poll/memstore"
 	"os"
 	"reflect"
 	"testing"

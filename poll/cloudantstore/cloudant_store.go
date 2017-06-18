@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/IBM-Bluemix/go-cloudant"
-	"markusreschke.name/selfhostedsimplepolling/poll"
+	"markusreschke.name/selfhostedchatpolling/poll"
 )
 
 type CloudantStore struct {

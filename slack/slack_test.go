@@ -6,7 +6,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/go-test/deep"
 	"io/ioutil"
-	"markusreschke.name/selfhostedsimplepolling/poll"
+	"markusreschke.name/selfhostedchatpolling/poll"
 	"os"
 	"testing"
 )

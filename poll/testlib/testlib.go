@@ -1,7 +1,7 @@
 package testlib
 
 import (
-	. "markusreschke.name/selfhostedsimplepolling/poll"
+	. "markusreschke.name/selfhostedchatpolling/poll"
 	"reflect"
 	"testing"
 )

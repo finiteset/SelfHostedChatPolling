@@ -1,7 +1,7 @@
 package memstore
 
 import (
-	"markusreschke.name/selfhostedsimplepolling/poll"
+	"markusreschke.name/selfhostedchatpolling/poll"
 	"sync"
 )
 
