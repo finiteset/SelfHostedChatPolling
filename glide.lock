@@ -1,8 +1,10 @@
-hash: 9e99c79800989b98929876ec856258f238e60a021d0afa899b39da46e39fc2f4
-updated: 2017-06-18T09:24:38.4269667+02:00
+hash: 8f7f32a16499d97af65aa9546eeb1140cad1a923eb68be9b72a18282b20cea5a
+updated: 2017-06-18T17:45:14.8809876+02:00
 imports:
 - name: github.com/cloudfoundry-community/go-cfenv
   version: f920e9562d5f951cbf11785728f67258c38a10d0
+- name: github.com/go-test/deep
+  version: f49763a6ea0a91026be26f8213bebee726b4185f
 - name: github.com/IBM-Bluemix/go-cloudant
   version: 0ded5c7f524e9b5c34a69edfe04de5d03436f10f
 - name: github.com/mitchellh/mapstructure
