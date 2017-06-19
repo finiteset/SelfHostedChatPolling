@@ -77,3 +77,10 @@ func (s *InMemoryStore) GetVote(voteId string) (poll.Vote, error) {
 	s.lock.Unlock()
 	return foundVote, nil
 }
+
+func (s *InMemoryStore) RemoveVote(voteId string) error {
+	s.lock.Lock()
+	delete(s.voteStore, voteId)
+	s.lock.Unlock()
+	return nil
+}

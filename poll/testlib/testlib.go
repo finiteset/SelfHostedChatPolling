@@ -27,6 +27,32 @@ func TestAddingAndRetrievingData(t *testing.T, store StoreBackend) {
 	}
 }
 
+func TestRemoveVote(t *testing.T, store StoreBackend) {
+	poll := Poll{"1", "q", "creator", []string{"a1", "a2"}}
+	err := store.AddPoll(poll)
+	if err != nil {
+		t.Fatal("Error adding poll to store!: ", err)
+	}
+	vote := Vote{"1", "voter", "1", 0}
+	err = store.AddVote(vote)
+	if err != nil {
+		t.Fatal("Error adding vote to store!: ", err)
+	}
+	err = store.RemoveVote(vote.ID)
+	if err != nil {
+		t.Fatal("Error removing vote to store!: ", err)
+	}
+	isVotePresent, _, err := store.PollHasVoteFromVoter(poll.ID, "voter")
+	if err != nil {
+		t.Log("Error testing if deleted vote is still present!: ", err)
+		t.Fail()
+	}
+	if isVotePresent {
+		t.Log("Failed to delete vote from store! Vote is still present!")
+		t.Fail()
+	}
+}
+
 func TestPollHasVoteFromVoter(t *testing.T, store StoreBackend) {
 	poll := Poll{"1", "q", "creator", []string{"a1", "a2"}}
 	voterID := "voter"

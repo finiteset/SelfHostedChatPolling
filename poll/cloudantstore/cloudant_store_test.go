@@ -57,3 +57,7 @@ func TestGettingVotesForPoll(t *testing.T) {
 func TestPollHasVoteFromVoter(t *testing.T) {
 	testlib.TestPollHasVoteFromVoter(t, getCleanStore(client))
 }
+
+func TestRemoveVote(t *testing.T) {
+	testlib.TestRemoveVote(t, getCleanStore(client))
+}

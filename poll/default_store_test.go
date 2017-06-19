@@ -37,15 +37,32 @@ func TestAddingAndRetrievingData(t *testing.T) {
 	}
 
 	// Test if store allows for invalid voting
-	voteInvalidDouble := poll.Vote{"1", "voter", "1", 1}
-	err = store.AddVote(voteInvalidDouble)
-	if err == nil {
-		t.Error("Store allowed double voting by same voter")
-	}
 	voteInvalidChoice := poll.Vote{"1", "voter2", "1", 2}
 	err = store.AddVote(voteInvalidChoice)
 	if err == nil {
 		t.Error("Store allowed voting for invalid choice")
+	}
+}
+
+func TestChangingVotes(t *testing.T) {
+	store := poll.NewDefaultStore(memstore.NewInMemoryStoreBackend())
+	testPoll := poll.Poll{"1", "q", "creator", []string{"a1", "a2", "a3"}}
+	store.AddPoll(testPoll)
+	vote := poll.Vote{"1", "voter", "1", 0}
+	err := store.AddVote(vote)
+	if err != nil {
+		t.Log("Error storing first vote: ", err)
+		t.Fail()
+	}
+	vote = poll.Vote{"1", "voter", "1", 1}
+	err = store.AddVote(vote)
+	if err != nil {
+		t.Log("Error storing changed vote: ", err)
+		t.Fail()
+	}
+	result, err := store.GetResult("1")
+	if err != nil || result[0] != 0 || result[1] != 1 || result[2] != 0 {
+		t.Fatal("Counts do not match. Error: ", err)
 	}
 }
 
@@ -67,6 +84,6 @@ func TestGettingCount(t *testing.T) {
 	store.AddVote(vote)
 	result, err := store.GetResult("1")
 	if err != nil || result[0] != 4 || result[1] != 0 || result[2] != 2 {
-		t.Fatalf("Counts do not match. Error: %v", err)
+		t.Fatal("Counts do not match. Error: ", err)
 	}
 }

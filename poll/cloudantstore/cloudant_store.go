@@ -12,9 +12,14 @@ type CloudantStore struct {
 }
 
 const (
-	pollPrefix = "poll_"
-	votePrefix = "vote_"
+	pollPrefix    = "poll_"
+	votePrefix    = "vote_"
+	deleteRetries = 3
 )
+
+func buildCloudantVoteId(voteId string) string {
+	return votePrefix + voteId
+}
 
 func NewCloudantStoreBackend(client *cloudant.Client, dbName string) (poll.StoreBackend, error) {
 	db, err := client.CreateDB(dbName)
@@ -34,7 +39,7 @@ func (s *CloudantStore) AddPoll(p poll.Poll) error {
 }
 
 func (s *CloudantStore) AddVote(v poll.Vote) error {
-	v.ID = votePrefix + v.ID
+	v.ID = buildCloudantVoteId(v.ID)
 	_, _, err := s.db.CreateDocument(v)
 	return err
 }
@@ -81,7 +86,7 @@ func (s *CloudantStore) GetPoll(pollId string) (poll.Poll, error) {
 
 func (s *CloudantStore) GetVote(voteId string) (poll.Vote, error) {
 	var vote poll.Vote
-	err := s.db.GetDocument(votePrefix+voteId, &vote, nil)
+	err := s.db.GetDocument(buildCloudantVoteId(voteId), &vote, nil)
 	vote.ID = strings.Replace(vote.ID, votePrefix, "", 1)
 	return vote, err
 }
@@ -104,4 +109,20 @@ func (s *CloudantStore) PollHasVoteFromVoter(pollID, voterID string) (bool, poll
 		}
 		return true, foundVote, nil
 	}
+}
+
+func (s *CloudantStore) RemoveVote(voteId string) error {
+	cloudantVoteId := buildCloudantVoteId(voteId)
+	var err error = nil
+	for i := 1; i <= deleteRetries; i += 1 {
+		rev, err := s.db.GetDocumentRev(cloudantVoteId)
+		if err != nil {
+			continue
+		}
+		_, err = s.db.DeleteDocument(cloudantVoteId, rev)
+		if err == nil {
+			break
+		}
+	}
+	return err
 }

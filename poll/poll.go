@@ -29,4 +29,5 @@ type StoreBackend interface {
 	GetVote(voteId string) (Vote, error)
 	GetVotesForPoll(pollId string) ([]Vote, error)
 	PollHasVoteFromVoter(pollID, voterID string) (bool, Vote, error)
+	RemoveVote(voteId string) error
 }

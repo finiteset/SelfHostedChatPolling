@@ -18,19 +18,22 @@ func (s *DefaultStore) AddPoll(p Poll) error {
 }
 
 func (s *DefaultStore) AddVote(v Vote) error {
-	hasVotedAlready, _, err := s.backend.PollHasVoteFromVoter(v.PollID, v.VoterID)
-	if err != nil {
-		return err
-	}
-	if hasVotedAlready {
-		return errors.New(fmt.Sprintf("Voter %s has already voted on Poll %s", v.VoterID, v.PollID))
-	}
 	isValidChoice, err := s.votedForValidOption(v)
 	if err != nil {
 		return err
 	}
 	if !isValidChoice {
 		return errors.New(fmt.Sprintf("Voter %s voted for invalid choice %s", v.VoterID, v.VotedFor))
+	}
+	hasVotedAlready, previousVote, err := s.backend.PollHasVoteFromVoter(v.PollID, v.VoterID)
+	if err != nil {
+		return err
+	}
+	if hasVotedAlready {
+		err := s.backend.RemoveVote(previousVote.ID)
+		if err != nil {
+			return err
+		}
 	}
 	return s.backend.AddVote(v)
 }
