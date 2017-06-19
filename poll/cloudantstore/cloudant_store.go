@@ -86,18 +86,22 @@ func (s *CloudantStore) GetVote(voteId string) (poll.Vote, error) {
 	return vote, err
 }
 
-func (s *CloudantStore) PollHasVoteFromVoter(pollID, voterID string) (bool, error) {
+func (s *CloudantStore) PollHasVoteFromVoter(pollID, voterID string) (bool, poll.Vote, error) {
 	query := cloudant.Query{}
 	query.Selector = make(map[string]interface{})
 	query.Selector["PollID"] = pollID
 	query.Selector["VoterID"] = voterID
 	votes, err := s.db.SearchDocument(query)
 	if err != nil {
-		return false, err
+		return false, poll.Vote{}, err
 	}
 	if votes == nil || len(votes) == 0 {
-		return false, nil
+		return false, poll.Vote{}, nil
 	} else {
-		return true, nil
+		foundVote, err := rebuildVoteFromMap(votes[0].(map[string]interface{}))
+		if err != nil {
+			return true, poll.Vote{}, err
+		}
+		return true, foundVote, nil
 	}
 }

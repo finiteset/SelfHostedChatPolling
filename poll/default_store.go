@@ -18,11 +18,11 @@ func (s *DefaultStore) AddPoll(p Poll) error {
 }
 
 func (s *DefaultStore) AddVote(v Vote) error {
-	doubleVote, err := s.backend.PollHasVoteFromVoter(v.PollID, v.VoterID)
+	hasVotedAlready, _, err := s.backend.PollHasVoteFromVoter(v.PollID, v.VoterID)
 	if err != nil {
 		return err
 	}
-	if doubleVote {
+	if hasVotedAlready {
 		return errors.New(fmt.Sprintf("Voter %s has already voted on Poll %s", v.VoterID, v.PollID))
 	}
 	isValidChoice, err := s.votedForValidOption(v)

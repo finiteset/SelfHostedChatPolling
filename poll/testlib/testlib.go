@@ -30,7 +30,7 @@ func TestAddingAndRetrievingData(t *testing.T, store StoreBackend) {
 func TestPollHasVoteFromVoter(t *testing.T, store StoreBackend) {
 	poll := Poll{"1", "q", "creator", []string{"a1", "a2"}}
 	voterID := "voter"
-	isVotePresent, err := store.PollHasVoteFromVoter(poll.ID, voterID)
+	isVotePresent, storedVote, err := store.PollHasVoteFromVoter(poll.ID, voterID)
 	if err != nil || isVotePresent {
 		if err != nil {
 			t.Fatalf("Error looking up vote: %v", err)
@@ -43,13 +43,17 @@ func TestPollHasVoteFromVoter(t *testing.T, store StoreBackend) {
 	if err != nil {
 		t.Fatalf("Error creating vote: %v", err)
 	}
-	isVotePresent, err = store.PollHasVoteFromVoter(poll.ID, voterID)
+	isVotePresent, storedVote, err = store.PollHasVoteFromVoter(poll.ID, voterID)
 	if err != nil || !isVotePresent {
 		if err != nil {
-			t.Fatalf("Error looking up vote: %v", err)
+			t.Fatal("Error looking up vote: ", err)
 		} else {
 			t.Fatalf("Vote not found for Voter %s after adding it!", voterID)
 		}
+	}
+	if vote != storedVote {
+		t.Fatalf("Stored Vote (%v) not the same as the one found in store (%v)!", storedVote, vote)
+
 	}
 }
 
