@@ -6,6 +6,15 @@ import (
 	"testing"
 )
 
+type StoreBackendFactory func() StoreBackend
+
+func RunTests(t *testing.T, storeFactory StoreBackendFactory) {
+	t.Run("TestAddingAndRetrievingData", func(t *testing.T) { TestAddingAndRetrievingData(t, storeFactory()) })
+	t.Run("TestGettingVotesForPoll", func(t *testing.T) { TestGettingVotesForPoll(t, storeFactory()) })
+	t.Run("TestPollHasVoteFromVoter", func(t *testing.T) { TestPollHasVoteFromVoter(t, storeFactory()) })
+	t.Run("TestRemoveVote", func(t *testing.T) { TestRemoveVote(t, storeFactory()) })
+}
+
 func TestAddingAndRetrievingData(t *testing.T, store StoreBackend) {
 	poll := Poll{"1", "q", "creator", []string{"a1", "a2"}}
 	err := store.AddPoll(poll)

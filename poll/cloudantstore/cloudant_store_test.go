@@ -46,18 +46,6 @@ func getCleanStore(client *cloudant.Client) poll.StoreBackend {
 	return store
 }
 
-func TestAddingAndRetrievingData(t *testing.T) {
-	testlib.TestAddingAndRetrievingData(t, getCleanStore(client))
-}
-
-func TestGettingVotesForPoll(t *testing.T) {
-	testlib.TestGettingVotesForPoll(t, getCleanStore(client))
-}
-
-func TestPollHasVoteFromVoter(t *testing.T) {
-	testlib.TestPollHasVoteFromVoter(t, getCleanStore(client))
-}
-
-func TestRemoveVote(t *testing.T) {
-	testlib.TestRemoveVote(t, getCleanStore(client))
+func TestAllCasesInTestLib(t *testing.T) {
+	testlib.RunTests(t, func() poll.StoreBackend { return getCleanStore(client) })
 }

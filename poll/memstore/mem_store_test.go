@@ -18,18 +18,6 @@ func getCleanStore() poll.StoreBackend {
 	return NewInMemoryStoreBackend()
 }
 
-func TestAddingAndRetrievingData(t *testing.T) {
-	testlib.TestAddingAndRetrievingData(t, getCleanStore())
-}
-
-func TestGettingVotesForPoll(t *testing.T) {
-	testlib.TestGettingVotesForPoll(t, getCleanStore())
-}
-
-func TestPollHasVoteFromVoter(t *testing.T) {
-	testlib.TestPollHasVoteFromVoter(t, getCleanStore())
-}
-
-func TestRemoveVote(t *testing.T) {
-	testlib.TestRemoveVote(t, getCleanStore())
+func TestAllCasesInTestLib(t *testing.T) {
+	testlib.RunTests(t, getCleanStore)
 }
