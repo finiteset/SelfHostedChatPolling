@@ -1,16 +1,14 @@
 package handlers
 
 import (
-	"github.com/pkg/errors"
-	"github.com/satori/go.uuid"
-	"io/ioutil"
 	"log"
+	"net/http"
+	"strconv"
+
+	"github.com/satori/go.uuid"
 	"markusreschke.name/selfhostedchatpolling/config"
 	"markusreschke.name/selfhostedchatpolling/poll"
 	"markusreschke.name/selfhostedchatpolling/slack"
-	"net/http"
-	"net/url"
-	"strconv"
 )
 
 const (
@@ -18,38 +16,6 @@ const (
 	contentTypeText       = "text/plain"
 	httpHeaderContentType = "Content-Type"
 )
-
-func parseNewPollRequest(appConfig config.AppConfig, logger *log.Logger, writer http.ResponseWriter, request *http.Request) (slack.SlackRequest, error) {
-	if appConfig.LogTraffic {
-		logger.Printf("Poll Creation Request: %v\n", request)
-	}
-	if request.Method != http.MethodPost {
-		writer.WriteHeader(http.StatusMethodNotAllowed)
-		return slack.SlackRequest{}, errors.New("MethodNotAllowed")
-	}
-	body, err := ioutil.ReadAll(request.Body)
-	if err != nil {
-		writer.WriteHeader(http.StatusBadRequest)
-		return slack.SlackRequest{}, errors.Wrap(err, "BadRequest - Body couldn't be read!")
-
-	}
-	if appConfig.LogTraffic {
-		logger.Printf("Poll Creation Request Query String: %s\n", string(body))
-	}
-	parsedBody, err := url.ParseQuery(string(body))
-	if err != nil {
-		writer.WriteHeader(http.StatusBadRequest)
-		return slack.SlackRequest{}, errors.Wrap(err, "BadRequest - Body couldn't be parsed!")
-	}
-	slackRequest := slack.NewSlackRequest(parsedBody)
-
-	if slackRequest.Token != appConfig.SlackVerificationToken {
-		writer.WriteHeader(http.StatusUnauthorized)
-		return slack.SlackRequest{}, errors.New("Unauthorized")
-	}
-
-	return slackRequest, nil
-}
 
 func handleUserFacingError(logger *log.Logger, writer http.ResponseWriter, err error, logMessage, slackMessage string) {
 	logger.Println(logMessage, err)
@@ -62,7 +28,7 @@ func handleUserFacingError(logger *log.Logger, writer http.ResponseWriter, err e
 
 func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		slackRequest, err := parseNewPollRequest(appConfig, logger, writer, request)
+		slackRequest, err := parseSlashCommandRequest(appConfig, logger, writer, request)
 		if err != nil {
 			logger.Println("Error reading and parsing request for new poll: ", err)
 			return
@@ -93,7 +59,7 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 
 func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		actionCallback, err := parseUpdatePollRequest(appConfig, logger, writer, request)
+		actionCallback, err := parseButtonActionRequest(appConfig, logger, writer, request)
 		if err != nil {
 			logger.Println("Error reading and parsing request for poll update: ", err)
 			return
@@ -138,46 +104,6 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 
 		return
 	}
-}
-
-func parseUpdatePollRequest(appConfig config.AppConfig, logger *log.Logger, writer http.ResponseWriter, request *http.Request) (slack.ActionResponse, error) {
-	if appConfig.LogTraffic {
-		logger.Printf("Poll Update Request: %v\n", request)
-	}
-	if request.Method != http.MethodPost {
-		writer.WriteHeader(http.StatusMethodNotAllowed)
-		return slack.ActionResponse{}, errors.New("MethodNotAllowed")
-	}
-	body, err := ioutil.ReadAll(request.Body)
-	if err != nil {
-		writer.WriteHeader(http.StatusBadRequest)
-		return slack.ActionResponse{}, errors.Wrap(err, "BadRequest - Couldn't read body")
-	}
-	parsedBody, err := url.ParseQuery(string(body))
-	if err != nil {
-		writer.WriteHeader(http.StatusBadRequest)
-		return slack.ActionResponse{}, errors.Wrap(err, "BadRequest - Couldn't parse request")
-	}
-	payload := parsedBody.Get("payload")
-	if payload == "" {
-		writer.WriteHeader(http.StatusBadRequest)
-		return slack.ActionResponse{}, errors.New("BadRequest - No Payload")
-	}
-	if appConfig.LogTraffic {
-		logger.Printf("Poll Update Request Payload: %s\n", payload)
-	}
-
-	actionCallback, err := slack.NewActionResponseFromPayload(payload)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		return slack.ActionResponse{}, errors.Wrap(err, "InternalServerError - Error creating new action response from payload!")
-	}
-
-	if actionCallback.Token != appConfig.SlackVerificationToken {
-		writer.WriteHeader(http.StatusUnauthorized)
-		return slack.ActionResponse{}, errors.New("Unauthorized")
-	}
-	return actionCallback, nil
 }
 
 func GetVersionRequestHandler(appConfig config.AppConfig, logger *log.Logger) http.HandlerFunc {

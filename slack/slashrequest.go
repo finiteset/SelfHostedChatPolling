@@ -4,7 +4,7 @@ import (
 	"net/url"
 )
 
-type SlackRequest struct {
+type SlashCommandRequest struct {
 	Token       string
 	TeamID      string
 	TeamDomain  string
@@ -17,8 +17,8 @@ type SlackRequest struct {
 	ResponseURL string
 }
 
-func NewSlackRequest(requestParams url.Values) SlackRequest {
-	request := SlackRequest{}
+func NewSlackRequest(requestParams url.Values) SlashCommandRequest {
+	request := SlashCommandRequest{}
 	request.Token = requestParams.Get("token")
 	request.TeamID = requestParams.Get("team_id")
 	request.TeamDomain = requestParams.Get("team_domain")
