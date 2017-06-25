@@ -20,6 +20,7 @@ type Store interface {
 	GetResult(pollId string) (map[int]uint64, error)
 	GetPoll(pollId string) (Poll, error)
 	GetVote(voteId string) (Vote, error)
+	GetVoteDetails(pollId string) (map[string][]string, error)
 }
 
 type StoreBackend interface {

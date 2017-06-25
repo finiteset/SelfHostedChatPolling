@@ -10,6 +10,7 @@ var Version string = "0.0.1"
 
 type AppConfig struct {
 	SlackVerificationToken string
+	SlackOAuthToken        string
 	Port                   int
 	DbName                 string
 	LogTraffic             bool
@@ -20,6 +21,10 @@ func ReadConfigFromEnv() (AppConfig, error) {
 	config.SlackVerificationToken = os.Getenv("SLACK_TOKEN")
 	if config.SlackVerificationToken == "" {
 		return config, errors.New("SLACK_TOKEN environment variable is not set!")
+	}
+	config.SlackOAuthToken = os.Getenv("SLACK_OAUTH_TOKEN")
+	if config.SlackOAuthToken == "" {
+		return config, errors.New("SLACK_OAUTH_TOKEN environment variable is not set!")
 	}
 	port, err := strconv.Atoi(os.Getenv("SHSP_PORT"))
 	if err != nil {

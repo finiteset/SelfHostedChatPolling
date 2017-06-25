@@ -59,6 +59,26 @@ func (s *DefaultStore) GetResult(pollId string) (map[int]uint64, error) {
 	return result, nil
 }
 
+func (s *DefaultStore) GetVoteDetails(pollId string) (map[string][]string, error) {
+	result := make(map[string][]string)
+	pollForId, err := s.backend.GetPoll(pollId)
+	if err != nil {
+		return nil, err
+	}
+	votes, err := s.backend.GetVotesForPoll(pollId)
+	if err != nil {
+		return nil, err
+	}
+	for _, optionName := range pollForId.Options {
+		result[optionName] = []string{}
+	}
+	for _, vote := range votes {
+		optionName := pollForId.Options[vote.VotedFor]
+		result[optionName] = append(result[optionName], vote.VoterID)
+	}
+	return result, nil
+}
+
 func (s *DefaultStore) GetPoll(pollId string) (Poll, error) {
 	return s.backend.GetPoll(pollId)
 }

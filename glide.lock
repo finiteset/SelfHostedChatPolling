@@ -1,5 +1,5 @@
-hash: bc69631578ab8aada588906201e7a2cd4075419fcaf67b2801d3b5f0d1da9b8c
-updated: 2017-06-18T23:45:38.0219676+02:00
+hash: 0270fc99712c27f95fdf84d553d97b6da68a9665f530b27bf5e0a0f67afa5b38
+updated: 2017-06-25T19:34:17.016621+02:00
 imports:
 - name: github.com/cloudfoundry-community/go-cfenv
   version: f920e9562d5f951cbf11785728f67258c38a10d0
@@ -11,6 +11,8 @@ imports:
   version: d0303fe809921458f417bcf828397a65db30a7e4
 - name: github.com/moul/http2curl
   version: 4e24498b31dba4683efb9d35c1c8a91e2eda28c8
+- name: github.com/nlopes/slack
+  version: c86337c0ef2486a15edd804355d9c73d2f2caed1
 - name: github.com/parnurzeal/gorequest
   version: a578a48e8d6ca8b01a3b18314c43c6716bb5f5a3
 - name: github.com/pkg/errors

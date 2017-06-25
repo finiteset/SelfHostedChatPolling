@@ -3,12 +3,15 @@ package slack
 import (
 	"encoding/json"
 	"flag"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/go-test/deep"
 	"io/ioutil"
-	"markusreschke.name/selfhostedchatpolling/poll"
 	"os"
 	"testing"
+
+	"bytes"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/go-test/deep"
+	"markusreschke.name/selfhostedchatpolling/poll"
 )
 
 func TestMain(m *testing.M) {
@@ -52,6 +55,45 @@ func TestNewPollMessageMultirow(t *testing.T) {
 	if diff := deep.Equal(expectedPollMessage, actualPollMessage); diff != nil {
 		t.Logf("Created poll message is not as expected.\nExpected: %v\nActual:%v\n", expectedPollMessage, actualPollMessage)
 		t.Log("Diff: ", diff)
+		t.Fail()
+	}
+}
+
+func TestNewVoteDetailMessage(t *testing.T) {
+	expectedText := "• Option1: A, B, C\n• Option2: A, B\n• Option3: \n"
+	input := map[string][]string{
+		"Option1": []string{"A", "B", "C"},
+		"Option2": []string{"A", "B"},
+		"Option3": []string{},
+	}
+	slackMsg := NewVoteDetailMessage(input)
+	if diff := deep.Equal(expectedText, slackMsg.Text); diff != nil {
+		t.Log("Vote Detail message is not formed as expected!")
+		t.Log("Diff:\n", diff)
+		t.Fail()
+	}
+	if slackMsg.ReplaceOriginal != false {
+		t.Log("Vote Detail message set to replace original!")
+		t.Fail()
+	}
+	if slackMsg.ResponseType != ResponseTypeEphemeral {
+		t.Log("Vote Detail message is not ephemeral!")
+		t.Fail()
+	}
+}
+
+func TestBuildVoteDetailMessageTest(t *testing.T) {
+	expectedText := "• Option1: A, B, C\n• Option2: A, B\n• Option3: \n"
+	input := map[string][]string{
+		"Option1": []string{"A", "B", "C"},
+		"Option2": []string{"A", "B"},
+		"Option3": []string{},
+	}
+	var actualText bytes.Buffer
+	buildVoteDetailMessageTest(input, &actualText)
+	if diff := deep.Equal(expectedText, actualText.String()); diff != nil {
+		t.Log("Vote Detail message is not formed as expected!")
+		t.Log("Diff:\n", diff)
 		t.Fail()
 	}
 }

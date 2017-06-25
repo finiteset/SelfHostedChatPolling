@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	slackApi "github.com/nlopes/slack"
 	"github.com/satori/go.uuid"
 	"markusreschke.name/selfhostedchatpolling/config"
 	"markusreschke.name/selfhostedchatpolling/poll"
@@ -57,7 +58,7 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 	}
 }
 
-func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store) http.HandlerFunc {
+func GetPollButtonRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		actionCallback, err := parseButtonActionRequest(appConfig, logger, writer, request)
 		if err != nil {
@@ -67,43 +68,78 @@ func GetUpdatePollRequestHandler(appConfig config.AppConfig, logger *log.Logger,
 
 		actionValue := actionCallback.Actions[0].Value
 
-		if actionValue != slack.RefreshButtonActionValue {
-			voteOptionIndex, err := strconv.Atoi(actionValue)
-			if err != nil {
-				writer.WriteHeader(http.StatusBadRequest)
-				logger.Println("BadRequest - Value of Action Callback is not a valid vote option index", err)
-				return
-			}
-			vote := poll.Vote{uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, voteOptionIndex}
-			err = pollStore.AddVote(vote)
-			if err != nil {
-				handleUserFacingError(logger, writer, err, "Error adding vote to store: ", "Error submitting vote!")
-				return
-			}
+		switch actionValue {
+		case slack.PollDetailButtonActionValue:
+			writePollDetailMessage(writer, logger, pollStore, actionCallback, appConfig)
+		case slack.RefreshButtonActionValue:
+			writeUpdatedPollMessage(writer, logger, pollStore, actionCallback)
+		default:
+			handleNewVoteRequest(writer, logger, pollStore, actionCallback)
+			writeUpdatedPollMessage(writer, logger, pollStore, actionCallback)
 		}
+	}
+}
 
-		results, err := pollStore.GetResult(actionCallback.CallbackID)
-		if err != nil {
-			handleUserFacingError(logger, writer, err, "Error calculating current poll count: ", "Error refreshing poll!")
-			return
-		}
-
-		poll, err := pollStore.GetPoll(actionCallback.CallbackID)
-		if err != nil {
-			handleUserFacingError(logger, writer, err, "Error fetching poll from store for message recreation: ", "Error refreshing poll!")
-			return
-		}
-
-		updatedMessage := slack.NewPollMessage(poll, results)
-
-		writer.Header().Set(httpHeaderContentType, contentTypeJSON)
-		writer.WriteHeader(http.StatusOK)
-
-		responseJSON, _ := updatedMessage.ToJSON()
-		writer.Write(responseJSON)
-
+func handleNewVoteRequest(writer http.ResponseWriter, logger *log.Logger, pollStore poll.Store, actionCallback slack.ActionResponse) {
+	logger.Println("Handle new vote request")
+	voteOptionIndex, err := strconv.Atoi(actionCallback.Actions[0].Value)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		logger.Println("BadRequest - Value of Action Callback is not a valid vote option index", err)
 		return
 	}
+	vote := poll.Vote{uuid.NewV4().String(), actionCallback.User.ID, actionCallback.CallbackID, voteOptionIndex}
+	err = pollStore.AddVote(vote)
+	if err != nil {
+		handleUserFacingError(logger, writer, err, "Error adding vote to store: ", "Error submitting vote!")
+		return
+	}
+}
+
+func writeUpdatedPollMessage(writer http.ResponseWriter, logger *log.Logger, pollStore poll.Store, actionCallback slack.ActionResponse) {
+	logger.Println("Handle poll update")
+	results, err := pollStore.GetResult(actionCallback.CallbackID)
+	if err != nil {
+		handleUserFacingError(logger, writer, err, "Error calculating current poll count: ", "Error refreshing poll!")
+		return
+	}
+
+	poll, err := pollStore.GetPoll(actionCallback.CallbackID)
+	if err != nil {
+		handleUserFacingError(logger, writer, err, "Error fetching poll from store for message recreation: ", "Error refreshing poll!")
+		return
+	}
+
+	updatedMessage := slack.NewPollMessage(poll, results)
+
+	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
+	writer.WriteHeader(http.StatusOK)
+
+	responseJSON, _ := updatedMessage.ToJSON()
+	writer.Write(responseJSON)
+}
+
+func writePollDetailMessage(writer http.ResponseWriter, logger *log.Logger, pollStore poll.Store, actionCallback slack.ActionResponse, appConfig config.AppConfig) {
+	logger.Println("Handle poll detail request")
+	voteDetails, err := pollStore.GetVoteDetails(actionCallback.CallbackID)
+	if err != nil {
+		handleUserFacingError(logger, writer, err, "Error calculating current poll vote details: ", "Error getting poll details!")
+		return
+	}
+
+	err = slack.ResolveVotersForPollDetails(&voteDetails, slackApi.New(appConfig.SlackOAuthToken))
+	if err != nil {
+		handleUserFacingError(logger, writer, err, "Error getting user names from Slack API: ", "Error getting user names for voters!")
+		return
+	}
+
+	pollDetailMessage := slack.NewVoteDetailMessage(voteDetails)
+
+	writer.Header().Set(httpHeaderContentType, contentTypeJSON)
+	writer.WriteHeader(http.StatusOK)
+
+	responseJSON, _ := pollDetailMessage.ToJSON()
+	writer.Write(responseJSON)
 }
 
 func GetVersionRequestHandler(appConfig config.AppConfig, logger *log.Logger) http.HandlerFunc {

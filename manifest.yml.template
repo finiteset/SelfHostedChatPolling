@@ -10,6 +10,7 @@ applications:
   buildpack: https://github.com/cloudfoundry/go-buildpack.git
   env:
     SLACK_TOKEN: <replace this>
+    SLACK_OAUTH_TOKEN: <replace this>
     CLOUDANT_DB: shsp_db_dev
     SHSP_LOG_TRAFFIC: false
   services:

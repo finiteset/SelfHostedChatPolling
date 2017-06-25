@@ -2,17 +2,19 @@ package main
 
 import (
 	"errors"
-	"github.com/cloudfoundry-community/go-cfenv"
 	"log"
+
+	"github.com/cloudfoundry-community/go-cfenv"
 	"markusreschke.name/selfhostedchatpolling/config"
 	"markusreschke.name/selfhostedchatpolling/handlers"
 	"markusreschke.name/selfhostedchatpolling/poll"
 	//"markusreschke.name/selfhostedchatpolling/poll/memstore"
-	"github.com/IBM-Bluemix/go-cloudant"
-	"markusreschke.name/selfhostedchatpolling/poll/cloudantstore"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/IBM-Bluemix/go-cloudant"
+	"markusreschke.name/selfhostedchatpolling/poll/cloudantstore"
 )
 
 func getCloudantCredentialsFromEnv(cloudantServiceName string) (user, password string, err error) {
@@ -57,7 +59,7 @@ func main() {
 	//pollStoreBackend := memstore.NewInMemoryStoreBackend()
 	pollStore := poll.NewDefaultStore(pollStoreBackend)
 	http.HandleFunc("/newpoll", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore))
-	http.HandleFunc("/updatepoll", handlers.GetUpdatePollRequestHandler(appConfig, logger, pollStore))
+	http.HandleFunc("/updatepoll", handlers.GetPollButtonRequestHandler(appConfig, logger, pollStore))
 	http.HandleFunc("/version", handlers.GetVersionRequestHandler(appConfig, logger))
 	http.ListenAndServe(":"+strconv.Itoa(appConfig.Port), nil)
 }

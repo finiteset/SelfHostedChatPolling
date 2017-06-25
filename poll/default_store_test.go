@@ -2,11 +2,14 @@ package poll_test
 
 import (
 	"flag"
-	"markusreschke.name/selfhostedchatpolling/poll"
-	"markusreschke.name/selfhostedchatpolling/poll/memstore"
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/go-test/deep"
+	"markusreschke.name/selfhostedchatpolling/poll"
+	"markusreschke.name/selfhostedchatpolling/poll/memstore"
 )
 
 func TestMain(m *testing.M) {
@@ -85,5 +88,39 @@ func TestGettingCount(t *testing.T) {
 	result, err := store.GetResult("1")
 	if err != nil || result[0] != 4 || result[1] != 0 || result[2] != 2 {
 		t.Fatal("Counts do not match. Error: ", err)
+	}
+}
+
+func TestGetVoteDetails(t *testing.T) {
+	store := poll.NewDefaultStore(memstore.NewInMemoryStoreBackend())
+	testPoll := poll.Poll{"1", "q", "creator", []string{"a1", "a2", "a3"}}
+	store.AddPoll(testPoll)
+	vote := poll.Vote{"1", "voter", "1", 0}
+	store.AddVote(vote)
+	vote = poll.Vote{"2", "voter2", "1", 0}
+	store.AddVote(vote)
+	vote = poll.Vote{"3", "voter3", "1", 2}
+	store.AddVote(vote)
+	vote = poll.Vote{"4", "voter4", "1", 0}
+	store.AddVote(vote)
+	vote = poll.Vote{"5", "voter5", "1", 2}
+	store.AddVote(vote)
+	vote = poll.Vote{"6", "voter6", "1", 0}
+	store.AddVote(vote)
+
+	expectedResult := map[string][]string{
+		"a1": []string{"voter", "voter2", "voter4", "voter6"},
+		"a2": []string{},
+		"a3": []string{"voter3", "voter5"},
+	}
+
+	result, err := store.GetVoteDetails(testPoll.ID)
+	if err != nil {
+		t.Fatal("Error getting vote details: ", err)
+	}
+	if diff := deep.Equal(expectedResult, result); diff != nil {
+		spew.Dump(result)
+		t.Log("Calculated vote details don't match the expected details", diff)
+		t.Fail()
 	}
 }
