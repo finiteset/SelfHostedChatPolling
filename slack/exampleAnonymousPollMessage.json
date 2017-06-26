@@ -1,0 +1,37 @@
+{
+  "text": "Test Question",
+  "attachments": [
+    {
+      "fallback": "Poll not available",
+      "callback_id": "a712786b-b0c1-45f9-8ba6-816a8b665322",
+      "actions": [
+        {
+          "name": "Answer 1_button",
+          "text": "Answer 1 | 0",
+          "type": "button",
+          "value": "0"
+        },
+        {
+          "name": "Answer 2_button",
+          "text": "Answer 2 | 0",
+          "type": "button",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "fallback": "Poll not available",
+      "callback_id": "a712786b-b0c1-45f9-8ba6-816a8b665322",
+      "actions": [
+        {
+          "name": "refresh_button",
+          "text": "Refresh",
+          "type": "button",
+          "value": "refresh"
+        }
+      ]
+    }
+  ],
+  "response_type": "in_channel",
+  "replace_original": true
+}

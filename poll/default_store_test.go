@@ -124,3 +124,17 @@ func TestGetVoteDetails(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestGetVoteDetailsAnonymous(t *testing.T) {
+	store := poll.NewDefaultStore(memstore.NewInMemoryStoreBackend())
+	testPoll := poll.Poll{ID: "1", Question: "q", CreatorID: "creator", Options: []string{"a1", "a2", "a3"}, Anonymous: true}
+	store.AddPoll(testPoll)
+
+	_, err := store.GetVoteDetails(testPoll.ID)
+	if err == nil {
+		t.Fatal("Was able to get vote details for anonymous poll!")
+	}
+	if err != poll.ErrNoDetailsForAnonymousPoll {
+		t.Fatal("Unexpected error was returned!: ", err)
+	}
+}

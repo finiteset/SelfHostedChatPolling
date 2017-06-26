@@ -1,13 +1,19 @@
 package poll
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 type DefaultStore struct {
 	backend StoreBackend
 }
+
+var (
+	ErrNoDetailsForAnonymousPoll = errors.New("Can't fetch vote details for anonymous polls!")
+	ErrInvalidChoice             = errors.New("Invalid option choice!")
+)
 
 func NewDefaultStore(backend StoreBackend) Store {
 	return &DefaultStore{backend}
@@ -23,7 +29,7 @@ func (s *DefaultStore) AddVote(v Vote) error {
 		return err
 	}
 	if !isValidChoice {
-		return errors.New(fmt.Sprintf("Voter %s voted for invalid choice %s", v.VoterID, v.VotedFor))
+		return errors.Wrap(ErrInvalidChoice, fmt.Sprintf("Voter %s voted for invalid choice %s", v.VoterID, v.VotedFor))
 	}
 	hasVotedAlready, previousVote, err := s.backend.PollHasVoteFromVoter(v.PollID, v.VoterID)
 	if err != nil {
@@ -64,6 +70,9 @@ func (s *DefaultStore) GetVoteDetails(pollId string) (map[string][]string, error
 	pollForId, err := s.backend.GetPoll(pollId)
 	if err != nil {
 		return nil, err
+	}
+	if pollForId.Anonymous {
+		return nil, ErrNoDetailsForAnonymousPoll
 	}
 	votes, err := s.backend.GetVotesForPoll(pollId)
 	if err != nil {
