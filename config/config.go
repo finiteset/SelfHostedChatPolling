@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-var Version string = "v0.0.2"
+var Version string = "v0.0.3"
 
 type AppConfig struct {
 	SlackVerificationToken string
