@@ -1,9 +1,10 @@
 package testlib
 
 import (
-	. "markusreschke.name/selfhostedchatpolling/poll"
 	"reflect"
 	"testing"
+
+	. "markusreschke.name/selfhostedchatpolling/poll"
 )
 
 type StoreBackendFactory func() StoreBackend
@@ -16,7 +17,7 @@ func RunTests(t *testing.T, storeFactory StoreBackendFactory) {
 }
 
 func TestAddingAndRetrievingData(t *testing.T, store StoreBackend) {
-	poll := Poll{"1", "q", "creator", []string{"a1", "a2"}}
+	poll := Poll{ID: "1", Question: "q", CreatorID: "creator", Options: []string{"a1", "a2", "a3"}}
 	err := store.AddPoll(poll)
 	if err != nil {
 		t.Fatalf("Error creating poll: %v", err)
@@ -37,7 +38,7 @@ func TestAddingAndRetrievingData(t *testing.T, store StoreBackend) {
 }
 
 func TestRemoveVote(t *testing.T, store StoreBackend) {
-	poll := Poll{"1", "q", "creator", []string{"a1", "a2"}}
+	poll := Poll{ID: "1", Question: "q", CreatorID: "creator", Options: []string{"a1", "a2", "a3"}}
 	err := store.AddPoll(poll)
 	if err != nil {
 		t.Fatal("Error adding poll to store!: ", err)
@@ -63,7 +64,7 @@ func TestRemoveVote(t *testing.T, store StoreBackend) {
 }
 
 func TestPollHasVoteFromVoter(t *testing.T, store StoreBackend) {
-	poll := Poll{"1", "q", "creator", []string{"a1", "a2"}}
+	poll := Poll{ID: "1", Question: "q", CreatorID: "creator", Options: []string{"a1", "a2", "a3"}}
 	voterID := "voter"
 	isVotePresent, storedVote, err := store.PollHasVoteFromVoter(poll.ID, voterID)
 	if err != nil || isVotePresent {
@@ -93,7 +94,7 @@ func TestPollHasVoteFromVoter(t *testing.T, store StoreBackend) {
 }
 
 func TestGettingVotesForPoll(t *testing.T, store StoreBackend) {
-	poll := Poll{"1", "q", "creator", []string{"a1", "a2", "a3"}}
+	poll := Poll{ID: "1", Question: "q", CreatorID: "creator", Options: []string{"a1", "a2", "a3"}}
 	votes := []Vote{
 		{"1", "voter", "1", 0},
 		{"2", "voter2", "1", 0},

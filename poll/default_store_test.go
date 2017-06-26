@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 
 func TestAddingAndRetrievingData(t *testing.T) {
 	store := poll.NewDefaultStore(memstore.NewInMemoryStoreBackend())
-	testPoll := poll.Poll{"1", "q", "creator", []string{"a1", "a2"}}
+	testPoll := poll.Poll{ID: "1", Question: "q", CreatorID: "creator", Options: []string{"a1", "a2", "a3"}}
 	err := store.AddPoll(testPoll)
 	if err != nil {
 		t.Fatalf("Error creating poll: %v", err)
@@ -40,7 +40,7 @@ func TestAddingAndRetrievingData(t *testing.T) {
 	}
 
 	// Test if store allows for invalid voting
-	voteInvalidChoice := poll.Vote{"1", "voter2", "1", 2}
+	voteInvalidChoice := poll.Vote{"1", "voter2", "1", 3}
 	err = store.AddVote(voteInvalidChoice)
 	if err == nil {
 		t.Error("Store allowed voting for invalid choice")
@@ -49,7 +49,7 @@ func TestAddingAndRetrievingData(t *testing.T) {
 
 func TestChangingVotes(t *testing.T) {
 	store := poll.NewDefaultStore(memstore.NewInMemoryStoreBackend())
-	testPoll := poll.Poll{"1", "q", "creator", []string{"a1", "a2", "a3"}}
+	testPoll := poll.Poll{ID: "1", Question: "q", CreatorID: "creator", Options: []string{"a1", "a2", "a3"}}
 	store.AddPoll(testPoll)
 	vote := poll.Vote{"1", "voter", "1", 0}
 	err := store.AddVote(vote)
@@ -71,7 +71,7 @@ func TestChangingVotes(t *testing.T) {
 
 func TestGettingCount(t *testing.T) {
 	store := poll.NewDefaultStore(memstore.NewInMemoryStoreBackend())
-	testPoll := poll.Poll{"1", "q", "creator", []string{"a1", "a2", "a3"}}
+	testPoll := poll.Poll{ID: "1", Question: "q", CreatorID: "creator", Options: []string{"a1", "a2", "a3"}}
 	store.AddPoll(testPoll)
 	vote := poll.Vote{"1", "voter", "1", 0}
 	store.AddVote(vote)
@@ -93,7 +93,7 @@ func TestGettingCount(t *testing.T) {
 
 func TestGetVoteDetails(t *testing.T) {
 	store := poll.NewDefaultStore(memstore.NewInMemoryStoreBackend())
-	testPoll := poll.Poll{"1", "q", "creator", []string{"a1", "a2", "a3"}}
+	testPoll := poll.Poll{ID: "1", Question: "q", CreatorID: "creator", Options: []string{"a1", "a2", "a3"}}
 	store.AddPoll(testPoll)
 	vote := poll.Vote{"1", "voter", "1", 0}
 	store.AddVote(vote)

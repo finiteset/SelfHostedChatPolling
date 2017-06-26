@@ -39,7 +39,7 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 		options := commandArguments[1:]
 		question := commandArguments[0]
 
-		poll := poll.Poll{callBackID.String(), question, slackRequest.UserID, options}
+		poll := poll.Poll{ID: callBackID.String(), Question: question, CreatorID: slackRequest.UserID, Options: options}
 		err = pollStore.AddPoll(poll)
 
 		if err != nil {
