@@ -119,5 +119,5 @@ func ResolveVoterNameBySlackID(userID string, slackApiClient *slackApi.Client) (
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s (%s)", user.RealName, user.Name), nil
+	return fmt.Sprintf("%s (<@%s>)", user.RealName, userID), nil
 }
