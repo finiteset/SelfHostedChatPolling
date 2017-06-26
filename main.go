@@ -58,7 +58,8 @@ func main() {
 	}
 	//pollStoreBackend := memstore.NewInMemoryStoreBackend()
 	pollStore := poll.NewDefaultStore(pollStoreBackend)
-	http.HandleFunc("/newpoll", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore))
+	http.HandleFunc("/newpoll", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore, false))
+	http.HandleFunc("/newpollanon", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore, true))
 	http.HandleFunc("/updatepoll", handlers.GetPollButtonRequestHandler(appConfig, logger, pollStore))
 	http.HandleFunc("/version", handlers.GetVersionRequestHandler(appConfig, logger))
 	http.ListenAndServe(":"+strconv.Itoa(appConfig.Port), nil)

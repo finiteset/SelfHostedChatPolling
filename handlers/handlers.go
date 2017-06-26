@@ -27,7 +27,7 @@ func handleUserFacingError(logger *log.Logger, writer http.ResponseWriter, err e
 	writer.Write(errorResponseJSON)
 }
 
-func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store) http.HandlerFunc {
+func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, pollStore poll.Store, forAnonPolls bool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		slackRequest, err := parseSlashCommandRequest(appConfig, logger, writer, request)
 		if err != nil {
@@ -39,7 +39,7 @@ func GetNewPollRequestHandler(appConfig config.AppConfig, logger *log.Logger, po
 		options := commandArguments[1:]
 		question := commandArguments[0]
 
-		poll := poll.Poll{ID: callBackID.String(), Question: question, CreatorID: slackRequest.UserID, Options: options}
+		poll := poll.Poll{ID: callBackID.String(), Question: question, CreatorID: slackRequest.UserID, Options: options, Anonymous: forAnonPolls}
 		err = pollStore.AddPoll(poll)
 
 		if err != nil {
