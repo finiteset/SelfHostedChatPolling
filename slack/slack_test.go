@@ -30,7 +30,26 @@ func TestNewPollMessageSimple(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error parsing sample file: ", err)
 	}
-	poll := poll.Poll{"a712786b-b0c1-45f9-8ba6-816a8b665322", "Test Question", "foobar", []string{"Answer 1", "Answer 2"}}
+	poll := poll.Poll{ID: "a712786b-b0c1-45f9-8ba6-816a8b665322", Question: "Test Question", CreatorID: "foobar", Options: []string{"Answer 1", "Answer 2"}}
+	actualPollMessage := NewPollMessage(poll, nil)
+	if diff := deep.Equal(expectedPollMessage, actualPollMessage); diff != nil {
+		t.Logf("Created poll message is not as expected.\nExpected: %v\nActual:%v\n", expectedPollMessage, actualPollMessage)
+		t.Log("Diff: ", diff)
+		t.Fail()
+	}
+}
+
+func TestNewPollMessageAnonymous(t *testing.T) {
+	dat, err := ioutil.ReadFile("exampleAnonymousPollMessage.json")
+	if err != nil {
+		t.Fatal("Error reading sample file: ", err)
+	}
+	var expectedPollMessage SlackMessage
+	err = json.Unmarshal(dat, &expectedPollMessage)
+	if err != nil {
+		t.Fatal("Error parsing sample file: ", err)
+	}
+	poll := poll.Poll{ID: "a712786b-b0c1-45f9-8ba6-816a8b665322", Question: "Test Question", CreatorID: "foobar", Options: []string{"Answer 1", "Answer 2"}, Anonymous: true}
 	actualPollMessage := NewPollMessage(poll, nil)
 	if diff := deep.Equal(expectedPollMessage, actualPollMessage); diff != nil {
 		t.Logf("Created poll message is not as expected.\nExpected: %v\nActual:%v\n", expectedPollMessage, actualPollMessage)
@@ -49,8 +68,8 @@ func TestNewPollMessageMultirow(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error parsing sample file: ", err)
 	}
-	poll := poll.Poll{"25a4a206-e870-4c5c-9cf8-22cc9bd89649", "Test Question", "foobar",
-		[]string{"Answer 1", "Answer 2", "Answer 3", "4", "5", "6", "7", "8", "9", "10", "11", "12"}}
+	poll := poll.Poll{ID: "25a4a206-e870-4c5c-9cf8-22cc9bd89649", Question: "Test Question", CreatorID: "foobar",
+		Options: []string{"Answer 1", "Answer 2", "Answer 3", "4", "5", "6", "7", "8", "9", "10", "11", "12"}}
 	actualPollMessage := NewPollMessage(poll, nil)
 	if diff := deep.Equal(expectedPollMessage, actualPollMessage); diff != nil {
 		t.Logf("Created poll message is not as expected.\nExpected: %v\nActual:%v\n", expectedPollMessage, actualPollMessage)

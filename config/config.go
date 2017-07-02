@@ -6,7 +6,14 @@ import (
 	"strconv"
 )
 
-var Version string = "v0.0.3"
+const (
+	BackendCloudant = "cloudant"
+	BackendInMemory = "inmemory"
+)
+
+var (
+	Version string = "v0.0.3"
+)
 
 type AppConfig struct {
 	SlackVerificationToken string
@@ -14,6 +21,7 @@ type AppConfig struct {
 	Port                   int
 	DbName                 string
 	LogTraffic             bool
+	Backend                string
 }
 
 func ReadConfigFromEnv() (AppConfig, error) {
@@ -26,7 +34,11 @@ func ReadConfigFromEnv() (AppConfig, error) {
 	if config.SlackOAuthToken == "" {
 		return config, errors.New("SLACK_OAUTH_TOKEN environment variable is not set!")
 	}
-	port, err := strconv.Atoi(os.Getenv("SHSP_PORT"))
+	config.Backend = os.Getenv("SHCP_BACKEND")
+	if config.Backend == "" {
+		config.Backend = BackendInMemory
+	}
+	port, err := strconv.Atoi(os.Getenv("SHCP_PORT"))
 	if err != nil {
 		port, err = strconv.Atoi(os.Getenv("PORT"))
 		if err != nil {
@@ -35,7 +47,7 @@ func ReadConfigFromEnv() (AppConfig, error) {
 	}
 	config.Port = port
 	config.DbName = os.Getenv("CLOUDANT_DB")
-	config.LogTraffic, err = strconv.ParseBool(os.Getenv("SHSP_LOG_TRAFFIC"))
+	config.LogTraffic, err = strconv.ParseBool(os.Getenv("SHCP_LOG_TRAFFIC"))
 	if err != nil {
 		config.LogTraffic = false
 	}

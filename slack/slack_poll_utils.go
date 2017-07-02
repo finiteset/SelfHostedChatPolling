@@ -77,7 +77,9 @@ func NewPollMessage(poll poll.Poll, results map[int]uint64) SlackMessage {
 			msg.AddAttachment(buttonAttachment)
 		}
 	}
-	msg.AddAttachment(NewPollDetailButtonAttachment(poll))
+	if !poll.Anonymous {
+		msg.AddAttachment(NewPollDetailButtonAttachment(poll))
+	}
 	msg.AddAttachment(NewRefreshButtonAttachment(poll))
 	return msg
 }

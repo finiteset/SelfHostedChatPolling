@@ -5,6 +5,7 @@ type Poll struct {
 	Question  string
 	CreatorID string
 	Options   []string
+	Anonymous bool
 }
 
 type Vote struct {

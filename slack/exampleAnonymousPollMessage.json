@@ -24,18 +24,6 @@
       "callback_id": "a712786b-b0c1-45f9-8ba6-816a8b665322",
       "actions": [
         {
-          "name": "poll_details_button",
-          "text": "Show vote details",
-          "type": "button",
-          "value": "poll_details"
-        }
-      ]
-    },
-    {
-      "fallback": "Poll not available",
-      "callback_id": "a712786b-b0c1-45f9-8ba6-816a8b665322",
-      "actions": [
-        {
           "name": "refresh_button",
           "text": "Refresh",
           "type": "button",
