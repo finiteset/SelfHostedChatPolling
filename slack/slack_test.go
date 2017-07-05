@@ -30,7 +30,7 @@ func TestNewPollMessageSimple(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error parsing sample file: ", err)
 	}
-	poll := poll.Poll{ID: "a712786b-b0c1-45f9-8ba6-816a8b665322", Question: "Test Question", CreatorID: "foobar", Options: []string{"Answer 1", "Answer 2"}}
+	poll := poll.Poll{ID: "6b57e603-2366-4116-b51d-011837677e33", Question: "Test Question", CreatorID: "foobar", Options: []string{"Answer 1", "Answer 2"}}
 	actualPollMessage := NewPollMessage(poll, nil)
 	if diff := deep.Equal(expectedPollMessage, actualPollMessage); diff != nil {
 		t.Logf("Created poll message is not as expected.\nExpected: %v\nActual:%v\n", expectedPollMessage, actualPollMessage)
@@ -49,27 +49,7 @@ func TestNewPollMessageAnonymous(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error parsing sample file: ", err)
 	}
-	poll := poll.Poll{ID: "a712786b-b0c1-45f9-8ba6-816a8b665322", Question: "Test Question", CreatorID: "foobar", Options: []string{"Answer 1", "Answer 2"}, Anonymous: true}
-	actualPollMessage := NewPollMessage(poll, nil)
-	if diff := deep.Equal(expectedPollMessage, actualPollMessage); diff != nil {
-		t.Logf("Created poll message is not as expected.\nExpected: %v\nActual:%v\n", expectedPollMessage, actualPollMessage)
-		t.Log("Diff: ", diff)
-		t.Fail()
-	}
-}
-
-func TestNewPollMessageMultirow(t *testing.T) {
-	dat, err := ioutil.ReadFile("exampleMultiRowPollMessage.json")
-	if err != nil {
-		t.Fatal("Error reading sample file: ", err)
-	}
-	var expectedPollMessage SlackMessage
-	err = json.Unmarshal(dat, &expectedPollMessage)
-	if err != nil {
-		t.Fatal("Error parsing sample file: ", err)
-	}
-	poll := poll.Poll{ID: "25a4a206-e870-4c5c-9cf8-22cc9bd89649", Question: "Test Question", CreatorID: "foobar",
-		Options: []string{"Answer 1", "Answer 2", "Answer 3", "4", "5", "6", "7", "8", "9", "10", "11", "12"}}
+	poll := poll.Poll{ID: "f843f53f-d7d2-4050-a5d7-fd222114038f", Question: "Test Question", CreatorID: "foobar", Options: []string{"Answer 1", "Answer 2"}, Anonymous: true}
 	actualPollMessage := NewPollMessage(poll, nil)
 	if diff := deep.Equal(expectedPollMessage, actualPollMessage); diff != nil {
 		t.Logf("Created poll message is not as expected.\nExpected: %v\nActual:%v\n", expectedPollMessage, actualPollMessage)
@@ -81,9 +61,9 @@ func TestNewPollMessageMultirow(t *testing.T) {
 func TestNewVoteDetailMessage(t *testing.T) {
 	expectedText := "• Option1: A, B, C\n• Option2: A, B\n• Option3: \n"
 	input := map[string][]string{
-		"Option1": []string{"A", "B", "C"},
-		"Option2": []string{"A", "B"},
-		"Option3": []string{},
+		"Option1": {"A", "B", "C"},
+		"Option2": {"A", "B"},
+		"Option3": {},
 	}
 	slackMsg := NewVoteDetailMessage(input)
 	if diff := deep.Equal(expectedText, slackMsg.Text); diff != nil {
@@ -104,9 +84,9 @@ func TestNewVoteDetailMessage(t *testing.T) {
 func TestBuildVoteDetailMessageTest(t *testing.T) {
 	expectedText := "• Option1: A, B, C\n• Option2: A, B\n• Option3: \n"
 	input := map[string][]string{
-		"Option1": []string{"A", "B", "C"},
-		"Option2": []string{"A", "B"},
-		"Option3": []string{},
+		"Option1": {"A", "B", "C"},
+		"Option2": {"A", "B"},
+		"Option3": {},
 	}
 	var actualText bytes.Buffer
 	buildVoteDetailMessageTest(input, &actualText)

@@ -1,37 +1,46 @@
 {
-  "text": "Test Question",
-  "attachments": [
-    {
-      "fallback": "Poll not available",
-      "callback_id": "a712786b-b0c1-45f9-8ba6-816a8b665322",
-      "actions": [
+    "text": "Test Question",
+    "attachments": [
         {
-          "name": "Answer 1_button",
-          "text": "Answer 1 | 0",
-          "type": "button",
-          "value": "0"
+            "fallback": "Poll not available",
+            "text": "Answer 1",
+            "callback_id": "f843f53f-d7d2-4050-a5d7-fd222114038f",
+            "actions": [
+                {
+                    "name": "Answer 1_button",
+                    "text": "0 Votes",
+                    "type": "button",
+                    "value": "0"
+                }
+            ]
         },
         {
-          "name": "Answer 2_button",
-          "text": "Answer 2 | 0",
-          "type": "button",
-          "value": "1"
-        }
-      ]
-    },
-    {
-      "fallback": "Poll not available",
-      "callback_id": "a712786b-b0c1-45f9-8ba6-816a8b665322",
-      "actions": [
+            "fallback": "Poll not available",
+            "text": "Answer 2",
+            "callback_id": "f843f53f-d7d2-4050-a5d7-fd222114038f",
+            "actions": [
+                {
+                    "name": "Answer 2_button",
+                    "text": "0 Votes",
+                    "type": "button",
+                    "value": "1"
+                }
+            ]
+        },
         {
-          "name": "refresh_button",
-          "text": "Refresh",
-          "type": "button",
-          "value": "refresh"
+            "fallback": "Poll not available",
+            "color": "#ff0000",
+            "callback_id": "f843f53f-d7d2-4050-a5d7-fd222114038f",
+            "actions": [
+                {
+                    "name": "refresh_button",
+                    "text": "Refresh",
+                    "type": "button",
+                    "value": "refresh"
+                }
+            ]
         }
-      ]
-    }
-  ],
-  "response_type": "in_channel",
-  "replace_original": true
+    ],
+    "response_type": "in_channel",
+    "replace_original": true
 }
