@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	Version string = "v0.0.3"
+	Version string = "v1.0.0"
 )
 
 type AppConfig struct {
