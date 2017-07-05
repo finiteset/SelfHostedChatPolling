@@ -4,7 +4,7 @@
         {
             "fallback": "Poll not available",
             "text": "Answer 1",
-            "callback_id": "6b57e603-2366-4116-b51d-011837677e33",
+            "callback_id": "f843f53f-d7d2-4050-a5d7-fd222114038f",
             "actions": [
                 {
                     "name": "Answer 1_button",
@@ -17,7 +17,7 @@
         {
             "fallback": "Poll not available",
             "text": "Answer 2",
-            "callback_id": "6b57e603-2366-4116-b51d-011837677e33",
+            "callback_id": "f843f53f-d7d2-4050-a5d7-fd222114038f",
             "actions": [
                 {
                     "name": "Answer 2_button",
@@ -29,21 +29,8 @@
         },
         {
             "fallback": "Poll not available",
-            "color": "#0000ff",
-            "callback_id": "6b57e603-2366-4116-b51d-011837677e33",
-            "actions": [
-                {
-                    "name": "poll_details_button",
-                    "text": "Show vote details",
-                    "type": "button",
-                    "value": "poll_details"
-                }
-            ]
-        },
-        {
-            "fallback": "Poll not available",
             "color": "#ff0000",
-            "callback_id": "6b57e603-2366-4116-b51d-011837677e33",
+            "callback_id": "f843f53f-d7d2-4050-a5d7-fd222114038f",
             "actions": [
                 {
                     "name": "refresh_button",

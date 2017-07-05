@@ -12,6 +12,7 @@ applications:
     SLACK_TOKEN: <replace this>
     SLACK_OAUTH_TOKEN: <replace this>
     CLOUDANT_DB: shsp_db_dev
-    SHSP_LOG_TRAFFIC: false
+    SHCP_LOG_TRAFFIC: false
+    SHCP_BACKEND: cloudant
   services:
     - shsp-cloudant

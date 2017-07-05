@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/IBM-Bluemix/go-cloudant"
+	"github.com/pkg/errors"
 	"markusreschke.name/selfhostedchatpolling/poll"
 )
 
@@ -26,7 +27,7 @@ func NewCloudantStoreBackend(client *cloudant.Client, dbName string) (poll.Store
 	if err != nil {
 		db, err = client.EnsureDB(dbName)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "Error acessing cloudant db!")
 		}
 	}
 	return &CloudantStore{db}, nil
@@ -35,13 +36,19 @@ func NewCloudantStoreBackend(client *cloudant.Client, dbName string) (poll.Store
 func (s *CloudantStore) AddPoll(p poll.Poll) error {
 	p.ID = pollPrefix + p.ID
 	_, _, err := s.db.CreateDocument(p)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "Error creating document for poll!")
+	}
+	return nil
 }
 
 func (s *CloudantStore) AddVote(v poll.Vote) error {
 	v.ID = buildCloudantVoteId(v.ID)
 	_, _, err := s.db.CreateDocument(v)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "Error creating document for vote!")
+	}
+	return nil
 }
 
 func rebuildVotesFromSearchResult(votes []interface{}) ([]poll.Vote, error) {
@@ -50,7 +57,7 @@ func rebuildVotesFromSearchResult(votes []interface{}) ([]poll.Vote, error) {
 		voteMap := rawVote.(map[string]interface{})
 		vote, err := rebuildVoteFromMap(voteMap)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "Error recreating votes from query result!")
 		}
 		result = append(result, vote)
 	}
@@ -72,7 +79,7 @@ func (s *CloudantStore) GetVotesForPoll(pollId string) ([]poll.Vote, error) {
 	query.Selector["PollID"] = pollId
 	votes, err := s.db.SearchDocument(query)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Error finding votes for poll %s!", pollId)
 	}
 	return rebuildVotesFromSearchResult(votes)
 }
@@ -80,6 +87,9 @@ func (s *CloudantStore) GetVotesForPoll(pollId string) ([]poll.Vote, error) {
 func (s *CloudantStore) GetPoll(pollId string) (poll.Poll, error) {
 	var poll poll.Poll
 	err := s.db.GetDocument(pollPrefix+pollId, &poll, nil)
+	if err != nil {
+		return poll, errors.Wrapf(err, "Error getting poll %s!", pollId)
+	}
 	poll.ID = strings.Replace(poll.ID, pollPrefix, "", 1)
 	return poll, err
 }
@@ -87,6 +97,9 @@ func (s *CloudantStore) GetPoll(pollId string) (poll.Poll, error) {
 func (s *CloudantStore) GetVote(voteId string) (poll.Vote, error) {
 	var vote poll.Vote
 	err := s.db.GetDocument(buildCloudantVoteId(voteId), &vote, nil)
+	if err != nil {
+		return vote, errors.Wrapf(err, "Error getting vote %s!", voteId)
+	}
 	vote.ID = strings.Replace(vote.ID, votePrefix, "", 1)
 	return vote, err
 }
@@ -98,14 +111,14 @@ func (s *CloudantStore) PollHasVoteFromVoter(pollID, voterID string) (bool, poll
 	query.Selector["VoterID"] = voterID
 	votes, err := s.db.SearchDocument(query)
 	if err != nil {
-		return false, poll.Vote{}, err
+		return false, poll.Vote{}, errors.Wrapf(err, "Error searching vote from voter %s for poll %s!", voterID, pollID)
 	}
 	if votes == nil || len(votes) == 0 {
 		return false, poll.Vote{}, nil
 	} else {
 		foundVote, err := rebuildVoteFromMap(votes[0].(map[string]interface{}))
 		if err != nil {
-			return true, poll.Vote{}, err
+			return true, poll.Vote{}, errors.Wrapf(err, "Error recreating vote from voter %s for poll %s from query result!", voterID, pollID)
 		}
 		return true, foundVote, nil
 	}
@@ -124,5 +137,8 @@ func (s *CloudantStore) RemoveVote(voteId string) error {
 			break
 		}
 	}
-	return err
+	if err != nil {
+		return errors.Wrapf(err, "Error deleting vote %s", voteId)
+	}
+	return nil
 }

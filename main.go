@@ -8,7 +8,7 @@ import (
 	"markusreschke.name/selfhostedchatpolling/config"
 	"markusreschke.name/selfhostedchatpolling/handlers"
 	"markusreschke.name/selfhostedchatpolling/poll"
-	//"markusreschke.name/selfhostedchatpolling/poll/memstore"
+	"markusreschke.name/selfhostedchatpolling/poll/memstore"
 	"net/http"
 	"os"
 	"strconv"
@@ -38,12 +38,7 @@ func getCloudantCredentialsFromEnv(cloudantServiceName string) (user, password s
 	return user, password, nil
 }
 
-func main() {
-	logger := log.New(os.Stdout, "logger: ", log.Lshortfile)
-	appConfig, err := config.ReadConfigFromEnv()
-	if err != nil {
-		logger.Fatal("Error reading config file: ", err)
-	}
+func configureCloudantBackend(appConfig config.AppConfig, logger *log.Logger) poll.StoreBackend {
 	cloudantUser, cloudantPassword, err := getCloudantCredentialsFromEnv("shsp-cloudant")
 	if err != nil {
 		logger.Fatalf("Couldn't fetch Cloudant credentials: %v", err)
@@ -56,9 +51,27 @@ func main() {
 	if err != nil {
 		logger.Fatalf("Couldn't create poll store: %v", err)
 	}
-	//pollStoreBackend := memstore.NewInMemoryStoreBackend()
+	return pollStoreBackend
+}
+
+func main() {
+	logger := log.New(os.Stdout, "logger: ", log.Lshortfile)
+	appConfig, err := config.ReadConfigFromEnv()
+	if err != nil {
+		logger.Fatal("Error reading config file: ", err)
+	}
+	var pollStoreBackend poll.StoreBackend
+	switch appConfig.Backend {
+	case config.BackendCloudant:
+		pollStoreBackend = configureCloudantBackend(appConfig, logger)
+	case config.BackendInMemory:
+		pollStoreBackend = memstore.NewInMemoryStoreBackend()
+	default:
+		logger.Fatal("Invalid backend configured!")
+	}
 	pollStore := poll.NewDefaultStore(pollStoreBackend)
-	http.HandleFunc("/newpoll", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore))
+	http.HandleFunc("/newpoll", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore, false))
+	http.HandleFunc("/newpollanon", handlers.GetNewPollRequestHandler(appConfig, logger, pollStore, true))
 	http.HandleFunc("/updatepoll", handlers.GetPollButtonRequestHandler(appConfig, logger, pollStore))
 	http.HandleFunc("/version", handlers.GetVersionRequestHandler(appConfig, logger))
 	http.ListenAndServe(":"+strconv.Itoa(appConfig.Port), nil)

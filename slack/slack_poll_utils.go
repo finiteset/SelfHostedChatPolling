@@ -46,6 +46,7 @@ func NewPollDetailButtonAttachment(poll poll.Poll) Attachment {
 	var buttonAttachment Attachment
 	buttonAttachment.Fallback = "Poll not available"
 	buttonAttachment.CallbackID = poll.ID
+	buttonAttachment.Color = "#0000ff"
 	button := Action{PollDetailButtonActionValue + "_button", "Show vote details", "button", PollDetailButtonActionValue}
 	buttonAttachment.AddAction(button)
 	return buttonAttachment
@@ -58,26 +59,26 @@ func NewPollMessage(poll poll.Poll, results map[int]uint64) SlackMessage {
 	msg.ReplaceOriginal = true
 	var buttonAttachment Attachment
 	for index, option := range poll.Options {
-		if index%MaxButtonsPerAttachment == 0 { // First Button in Row
-			buttonAttachment = Attachment{}
-			buttonAttachment.Fallback = "Poll not available"
-			buttonAttachment.CallbackID = poll.ID
+		var voteCount uint64 = results[index]
+		buttonAttachment = Attachment{}
+		buttonAttachment.Fallback = "Poll not available"
+		buttonAttachment.CallbackID = poll.ID
+		buttonAttachment.Text = option
+		voteCountText := "Vote"
+		if voteCount != 1 {
+			voteCountText += "s"
 		}
 		var button Action
 		button.Name = option + "_button"
-		var voteCount uint64 = 0
-		if results != nil {
-			voteCount = results[index]
-		}
-		button.Text = option + " | " + fmt.Sprintf("%d", voteCount)
+		button.Text = fmt.Sprintf("%d %s", voteCount, voteCountText)
 		button.Type = "button"
 		button.Value = strconv.Itoa(index)
 		buttonAttachment.AddAction(button)
-		if (index+1)%MaxButtonsPerAttachment == 0 || (index+1) == len(poll.Options) { // Last Button in Row
-			msg.AddAttachment(buttonAttachment)
-		}
+		msg.AddAttachment(buttonAttachment)
 	}
-	msg.AddAttachment(NewPollDetailButtonAttachment(poll))
+	if !poll.Anonymous {
+		msg.AddAttachment(NewPollDetailButtonAttachment(poll))
+	}
 	msg.AddAttachment(NewRefreshButtonAttachment(poll))
 	return msg
 }
@@ -87,6 +88,7 @@ func NewRefreshButtonAttachment(poll poll.Poll) Attachment {
 	refreshButtonAttachment.Fallback = "Poll not available"
 	refreshButtonAttachment.CallbackID = poll.ID
 	refreshButton := Action{RefreshButtonActionValue + "_button", "Refresh", "button", RefreshButtonActionValue}
+	refreshButtonAttachment.Color = "#ff0000"
 	refreshButtonAttachment.AddAction(refreshButton)
 	return refreshButtonAttachment
 }
