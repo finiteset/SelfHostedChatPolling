@@ -61,22 +61,26 @@ on the commandline while being in the root dir of the cloned repo.
 
 
 ## Set up slash commands ##
+
 Go to the application on the Slack API page. Go to **Features/Slash Commands**.
 Create the following two slash commands:
 
 ### New Poll ###
+
 - Command: /poll
 - Request URL: <Your CF application url>/newpoll
 - Description: Create a new poll
 - Usage hint: "A Question" OptionA "Option B" :cake:
 
 ### New anonymous poll ###
+
 - Command: /pollanon
 - Request URL: <Your CF application url>/newpollanon
 - Description: Create a new anonymous poll
 - Usage hint: "A Question" OptionA "Option B" :cake:
 
 ## Set up interactive messages ##
+
 Go to the application on the Slack API page. Go to **Features/Interactive messages**.
 Click on **Enable interactive messages** and set the following as request URL:
 
